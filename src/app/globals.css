@@ -1,0 +1,29 @@
+@import "tailwindcss";
+:root{--background:#CCD0CF;--foreground:#06141B;--primary:#11212D;--muted:#4A5C6A;--line:#9BA8AB;--surface:#ffffff;--surface-soft:#f2f5f5;--highlight:#253745}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--background);color:var(--foreground);font-family:Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}a{text-decoration:none}input,select,textarea{min-width:0}button:disabled{opacity:.55;cursor:not-allowed}
+@media print{.no-print{display:none!important}.print-only{display:block!important}body{background:white!important}@page{size:A3 landscape;margin:9mm}}
+
+/* GAMU: paleta institucional azul pizarra de referencia */
+body{background:var(--background)}
+:focus-visible{outline:2px solid #4A5C6A;outline-offset:2px}
+.gamu-crest{object-fit:contain;flex-shrink:0}
+.gamu-surface{background:var(--surface)}
+.gamu-brand{color:#06141B}
+/* Reasignación global de colores heredados sin afectar la impresión oficial */
+@media screen{
+.bg-\[\#123d2c\]{background-color:#06141B!important}
+.bg-\[\#145c42\]{background-color:#11212D!important}
+.hover\:bg-\[\#0d4531\]:hover{background-color:#253745!important}
+.bg-\[\#e6f2eb\]{background-color:#CCD0CF!important}
+.bg-\[\#f1f6f3\]{background-color:#CCD0CF!important}
+.text-\[\#145c42\]{color:#11212D!important}
+.text-\[\#334b3c\]{color:#253745!important}
+.text-\[\#718077\]{color:#4A5C6A!important}
+.border-\[\#e0e8e3\]{border-color:#9BA8AB!important}
+.border-\[\#d7e1da\]{border-color:#9BA8AB!important}
+.border-\[\#dce5df\]{border-color:#9BA8AB!important}
+.focus\:ring-emerald-500\/30:focus{--tw-ring-color:rgba(74,92,106,.3)!important}
+.hover\:bg-emerald-50:hover{background-color:#CCD0CF!important}
+.bg-emerald-50{background-color:#CCD0CF!important}
+.text-emerald-800{color:#11212D!important}
+}

@@ -1,0 +1,1 @@
+import {CatalogCrud} from '@/components/catalog-crud';export default function Page(){return <CatalogCrud kind="cargos"/>}

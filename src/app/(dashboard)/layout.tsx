@@ -1,0 +1,2 @@
+import {redirect} from 'next/navigation';import {createClient} from '@/lib/supabase/server';import {Shell} from '@/components/shell';
+export default async function AppLayout({children}:{children:React.ReactNode}){const supabase=await createClient();const {data:{user},error}=await supabase.auth.getUser();if(error||!user)redirect('/login');const {data:profile}=await supabase.from('perfiles').select('activo').eq('id',user.id).maybeSingle();if(!profile?.activo)redirect('/sin-acceso');return <Shell>{children}</Shell>}

@@ -1,0 +1,1 @@
+export default function NoAccess(){return <main className="min-h-screen grid place-items-center p-6"><div className="text-center"><h1 className="text-2xl font-bold">Acceso no habilitado</h1><p>Contacte al administrador para que active su cuenta.</p><a className="underline" href="/login">Volver al inicio de sesión</a></div></main>}
