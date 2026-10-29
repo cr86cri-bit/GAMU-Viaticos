@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/error-messages";
 import { exportarPlanillaOficial, type FilaPlanilla } from "@/lib/export/planilla-oficial";
 import { exportarPlanillaPDF } from "@/lib/export/planilla-pdf";
-import { Alert, Card, Field, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { Alert, Card, Field, Input, PageHeader, Select } from "@/components/ui";
 import { PayrollPreviewModal, type PreviewInfo } from "@/components/payroll-preview-modal";
 import { TripPicker } from "@/components/trip-picker";
 
@@ -29,10 +29,10 @@ export function Payroll() {
   const [trips, setTrips] = useState<Row[]>([]);
   const [chosen, setChosen] = useState<string[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
+  const [hotelDocs, setHotelDocs] = useState<Row[]>([]);
   const [directions, setDirections] = useState<Row[]>([]);
   const [direction, setDirection] = useState("");
   const [gestion, setGestion] = useState(String(new Date().getFullYear()));
-  const [description, setDescription] = useState("");
   const [fecha, setFecha] = useState(todayLocal);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -72,7 +72,7 @@ export function Payroll() {
 
   useEffect(() => {
     let active = true;
-    if (!chosen.length) { setRows([]); setLoadingRows(false); return; }
+    if (!chosen.length) { setRows([]); setHotelDocs([]); setLoadingRows(false); return; }
     setLoadingRows(true);
     setRows([]); // Evita previsualizar los días de otra selección durante la consulta.
     void (async () => {
@@ -83,13 +83,22 @@ export function Payroll() {
         .order("fecha", { ascending: true });
       if (!active) return;
       if (err) { setError(friendlyError(err)); setRows([]); }
-      else setRows(data ?? []);
+      else {
+        setRows(data ?? []);
+        if (data?.length) {
+          const {data:comps,error:compErr}=await supabase.from("comprobantes").select("*").eq("tipo","hospedaje").in("viaje_dia_id",data.map(x=>x.id));
+          if(!active)return;
+          if(compErr)setError(friendlyError(compErr));
+          setHotelDocs(comps??[]);
+        }else setHotelDocs([]);
+      }
       setLoadingRows(false);
     })();
     return () => { active = false; };
   }, [chosen, supabase]);
 
-  const emitKey = JSON.stringify({ direction, gestion, description, fecha, chosen: [...chosen].sort() });
+  const automaticDescription = [...new Set(chosen.map(id=>trips.find(t=>t.id===id)?.destinos?.nombre).filter(Boolean))].map(x=>`VIAJE A LA CIUDAD DE ${String(x).toUpperCase()}`).join("; ");
+  const emitKey = JSON.stringify({ direction, gestion, automaticDescription, fecha, chosen: [...chosen].sort() });
   const currentNumber = emitted?.key === emitKey ? emitted.numero : "";
 
   useEffect(() => {
@@ -121,8 +130,9 @@ export function Payroll() {
       ci: String(t?.funcionarios?.ci ?? ""),
       fecha: d.fecha,
       porcentaje: Number(d.porcentaje ?? 0),
+      hotelTotal: hotelDocs.filter(c=>c.viaje_dia_id===d.id).reduce((a,c)=>a+Number(c.monto),0),
       hojaRuta: String(t?.nro_hoja_ruta ?? ""),
-      descripcion: t?.motivo ?? "",
+      descripcion: `VIAJE A LA CIUDAD DE ${String(t?.destinos?.nombre ?? "DESTINO").toUpperCase()}` + (hotelDocs.some(c=>c.viaje_dia_id===d.id)?`\nFACTURAS HOTEL: Bs ${hotelDocs.filter(c=>c.viaje_dia_id===d.id).reduce((a,c)=>a+Number(c.monto),0).toFixed(2)}`:""),
       dias: 1,
       viaticoDia: Number(d.viatico_dia ?? 0),
       totalViatico: Number(d.total_viatico ?? 0),
@@ -135,14 +145,14 @@ export function Payroll() {
       pasajeNeto: Number(d.pasaje_neto ?? 0),
       liquido: Number(d.liquido_pagable ?? 0),
     };
-  }), [rows, infoByTrip]);
+  }), [rows, infoByTrip, hotelDocs]);
 
   const dir = directions.find(d => d.id === direction);
   const previewInfo: PreviewInfo = {
     gestion,
     daf: currentNumber || nextNumber,
     fecha,
-    descripcion: description,
+    descripcion: automaticDescription,
     siglas: dir?.siglas || "DAF",
     color: dir?.color || "#E2EDD9",
     filas: exportRows,
@@ -164,7 +174,7 @@ export function Payroll() {
       p_direccion_id: direction,
       p_gestion: Number(gestion),
       p_fecha: fecha,
-      p_descripcion: description,
+      p_descripcion: automaticDescription,
       p_viajes: chosen,
     });
     if (err) throw err;
@@ -249,11 +259,6 @@ export function Payroll() {
           </Field>
           <Field label="Fecha de emisión">
             <Input type="date" value={fecha} onChange={e => setFecha(e.target.value)} />
-          </Field>
-        </div>
-        <div className="mt-3">
-          <Field label="Descripción">
-            <Textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} placeholder="La presente planilla corresponde..." />
           </Field>
         </div>
         <div className="mt-3">

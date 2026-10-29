@@ -1,29 +1,106 @@
 @import "tailwindcss";
-:root{--background:#CCD0CF;--foreground:#06141B;--primary:#11212D;--muted:#4A5C6A;--line:#9BA8AB;--surface:#ffffff;--surface-soft:#f2f5f5;--highlight:#253745}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--background);color:var(--foreground);font-family:Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}a{text-decoration:none}input,select,textarea{min-width:0}button:disabled{opacity:.55;cursor:not-allowed}
-@media print{.no-print{display:none!important}.print-only{display:block!important}body{background:white!important}@page{size:A3 landscape;margin:9mm}}
-
-/* GAMU: paleta institucional azul pizarra de referencia */
-body{background:var(--background)}
-:focus-visible{outline:2px solid #4A5C6A;outline-offset:2px}
-.gamu-crest{object-fit:contain;flex-shrink:0}
-.gamu-surface{background:var(--surface)}
-.gamu-brand{color:#06141B}
-/* Reasignación global de colores heredados sin afectar la impresión oficial */
-@media screen{
-.bg-\[\#123d2c\]{background-color:#06141B!important}
-.bg-\[\#145c42\]{background-color:#11212D!important}
-.hover\:bg-\[\#0d4531\]:hover{background-color:#253745!important}
-.bg-\[\#e6f2eb\]{background-color:#CCD0CF!important}
-.bg-\[\#f1f6f3\]{background-color:#CCD0CF!important}
-.text-\[\#145c42\]{color:#11212D!important}
-.text-\[\#334b3c\]{color:#253745!important}
-.text-\[\#718077\]{color:#4A5C6A!important}
-.border-\[\#e0e8e3\]{border-color:#9BA8AB!important}
-.border-\[\#d7e1da\]{border-color:#9BA8AB!important}
-.border-\[\#dce5df\]{border-color:#9BA8AB!important}
-.focus\:ring-emerald-500\/30:focus{--tw-ring-color:rgba(74,92,106,.3)!important}
-.hover\:bg-emerald-50:hover{background-color:#CCD0CF!important}
-.bg-emerald-50{background-color:#CCD0CF!important}
-.text-emerald-800{color:#11212D!important}
+/* GAMU — tokens únicos para TODOS los módulos. No sobrescribir clases Tailwind globalmente. */
+:root { color-scheme: light;
+ --background:#CCD0CF;--foreground:#06141B;--primary:#11212D;
+ --g-text:#06141B;--g-muted:#4A5C6A;--g-label:#11212D;
+ --g-card:#F2F6F6;--g-panel:#E7EEEE;--g-panel-head:#CCD0CF;
+ --g-input:#FFFFFF;--g-choice:#FFFFFF;--g-choice-active:#CCD0CF;
+ --g-border:#9BA8AB;--g-badge:#D9E3E5;--g-count:#CCD0CF;
+ --g-accent:#11212D;--g-accent-text:#FFFFFF;--g-row-hover:#DCE6E8;
+ --g-thead:#253745;--g-thead-text:#FFFFFF;--g-danger-bg:#FFF1F2;--g-danger-text:#A51428;
 }
+html.gamu-dark { color-scheme: dark;
+ --background:#06141B;--foreground:#F4F7F7;--primary:#253745;
+ --g-text:#F4F7F7;--g-muted:#CCD0CF;--g-label:#F4F7F7;
+ --g-card:#11212D;--g-panel:#11212D;--g-panel-head:#253745;
+ --g-input:#253745;--g-choice:#253745;--g-choice-active:#4A5C6A;
+ --g-border:#4A5C6A;--g-badge:#405968;--g-count:#344C5B;
+ --g-accent:#9BA8AB;--g-accent-text:#06141B;--g-row-hover:#253745;
+ --g-thead:#344D60;--g-thead-text:#FFFFFF;--g-danger-bg:#522734;--g-danger-text:#FFE3E5;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{background:var(--background);color:var(--foreground);font-family:Arial,Helvetica,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}a{text-decoration:none}input,select,textarea{min-width:0}button:disabled{opacity:.55;cursor:not-allowed}
+:focus-visible{outline:2px solid #9BA8AB;outline-offset:2px}.gamu-crest{object-fit:contain;flex-shrink:0}
+/* Componentes semánticos */
+.gamu-text{color:var(--g-text)}.gamu-label{color:var(--g-label)}.gamu-muted{color:var(--g-muted)}
+.gamu-card{background:var(--g-card);color:var(--g-text);border-color:var(--g-border)}
+.gamu-panel{background:var(--g-panel);color:var(--g-text);border-color:var(--g-border)}
+.gamu-panel-header{background:var(--g-panel-head);color:var(--g-text);border-color:var(--g-border)}
+.gamu-input{background:var(--g-input);color:var(--g-text);border-color:var(--g-border)}
+.gamu-input::placeholder{color:var(--g-muted);opacity:1}
+.gamu-choice,.gamu-chip{background:var(--g-choice);color:var(--g-text);border-color:var(--g-border)}
+.gamu-choice-selected,.gamu-chip-selected{background:var(--g-choice-active);color:var(--g-text);border-color:var(--g-accent)}
+.gamu-choice:hover,.gamu-chip:hover{background:var(--g-row-hover)}
+.gamu-badge{background:var(--g-badge);color:var(--g-text)}.gamu-count{background:var(--g-count);color:var(--g-text)}
+.gamu-icon-box{background:var(--g-badge);color:var(--g-text)}
+.gamu-check{background:var(--g-input);border-color:var(--g-border)}.gamu-check-active{background:var(--g-accent);color:var(--g-accent-text);border-color:var(--g-accent)}
+.gamu-btn-primary{background:#11212D;color:#FFFFFF}.gamu-btn-primary:hover{background:#253745}
+html.gamu-dark .gamu-btn-primary{background:#4A5C6A;color:#FFFFFF}html.gamu-dark .gamu-btn-primary:hover{background:#637887}
+.gamu-btn-danger{background:var(--g-danger-bg);color:var(--g-danger-text)}
+.gamu-table{width:100%;border-collapse:collapse;color:var(--g-text)}
+.gamu-table thead,.gamu-table thead tr,.gamu-table thead th{background:var(--g-thead)!important;color:var(--g-thead-text)!important}
+.gamu-table thead th{font-weight:700;text-align:left;vertical-align:middle}
+.gamu-table tbody tr{border-bottom:1px solid var(--g-border);background:transparent;color:var(--g-text)}
+.gamu-table tbody tr:hover{background:var(--g-row-hover)}
+.gamu-table tbody td{color:var(--g-text);vertical-align:middle}
+.gamu-table .gamu-muted{color:var(--g-muted)}
+.gamu-trip-card{background:var(--g-choice);color:var(--g-text);border-color:var(--g-border)}
+.gamu-trip-card:hover{background:var(--g-row-hover)}.gamu-trip-card>p:first-child{color:var(--g-text)}.gamu-trip-card>p:nth-child(2){color:var(--g-muted)}
+.theme-toggle{background:var(--g-panel-head);color:var(--g-text);border-color:var(--g-border)}
+.gamu-dialog{background:var(--g-card);color:var(--g-text);border-color:var(--g-border)}
+/* compatibilidad con elementos antiguos que aún usan utilidades Tailwind en páginas interactivas */
+html.gamu-dark .gamu-card .text-slate-500,html.gamu-dark .gamu-card .text-slate-600{color:var(--g-muted)}
+html.gamu-dark .gamu-card .bg-white{background:var(--g-choice);color:var(--g-text)}
+html.gamu-dark .gamu-card .bg-slate-50,html.gamu-dark .gamu-card .bg-slate-100{background:var(--g-panel-head);color:var(--g-text)}
+html.gamu-dark .gamu-card input,html.gamu-dark .gamu-card textarea,html.gamu-dark .gamu-card select{background:var(--g-input);color:var(--g-text)}
+html.gamu-dark .gamu-card input::placeholder{color:var(--g-muted)}
+/* La previsualización institucional es un documento de impresión, NO recibe el tema oscuro. */
+.gamu-document,.gamu-document *{color:#000}
+@media print{.no-print{display:none!important}.print-only{display:block!important}body{background:white!important;color:black!important}@page{size:A3 landscape;margin:9mm}}
+
+
+/* GAMU layout: los mismos tokens controlan la cabecera y el sidebar. */
+:root {
+ --g-sidebar:#CCD0CF; --g-sidebar-text:#11212D; --g-sidebar-hover:#B6C2C4;
+ --g-sidebar-active:#9BA8AB; --g-topbar:#F2F6F6; --g-bottomnav:#F2F6F6;
+ --g-bottomnav-active:#11212D;
+}
+html.gamu-dark {
+ --g-sidebar:#253745; --g-sidebar-text:#F4F7F7; --g-sidebar-hover:#344D60;
+ --g-sidebar-active:#4A5C6A; --g-topbar:#11212D; --g-bottomnav:#11212D;
+ --g-bottomnav-active:#FFFFFF;
+}
+.gamu-sidebar { background:var(--g-sidebar); color:var(--g-sidebar-text); border-color:var(--g-border); }
+.gamu-sidebar .gamu-muted { color:var(--g-sidebar-text); opacity:.82; }
+.gamu-sidebar-link { color:var(--g-sidebar-text); }
+.gamu-sidebar-link:hover { background:var(--g-sidebar-hover); }
+.gamu-sidebar-active { color:var(--g-sidebar-text); background:var(--g-sidebar-active); }
+.gamu-sidebar-toggle { background:var(--g-sidebar); color:var(--g-sidebar-text); border-color:var(--g-border); }
+.gamu-sidebar-toggle:hover { background:var(--g-sidebar-hover); }
+.gamu-sidebar-logout {color:var(--g-sidebar-text);}
+.gamu-sidebar-logout:hover { background:var(--g-sidebar-hover); }
+.gamu-topbar { background:var(--g-topbar); color:var(--g-text); border-color:var(--g-border); }
+.gamu-bottomnav { background:var(--g-bottomnav); color:var(--g-text); border-color:var(--g-border); }
+.gamu-bottomnav-active { color:var(--g-bottomnav-active); }
+/* Modales y capas de impresión no heredan fondos oscuros accidentalmente. */
+.gamu-document {background:#fff!important;color:#000!important; color-scheme:light;}
+
+/* GAMU: modales anidados, tablas y controles con tema coherente. */
+.gamu-dialog { color-scheme:light; background:var(--g-card);color:var(--g-text); }
+html.gamu-dark .gamu-dialog {color-scheme:dark;}
+.gamu-dialog h1,.gamu-dialog h2,.gamu-dialog h3,.gamu-dialog label {color:var(--g-text)}
+.gamu-dialog input:not([type=checkbox]):not([type=radio]):not([type=color]),
+.gamu-dialog textarea,.gamu-dialog select {background:var(--g-input); color:var(--g-text);border-color:var(--g-border)}
+.gamu-dialog input::placeholder,.gamu-dialog textarea::placeholder {color:var(--g-muted)}
+.gamu-dialog button:not(.gamu-btn-primary):not(.gamu-btn-danger) {color:inherit}
+.gamu-dialog .gamu-btn-primary {color:#fff}
+.gamu-dialog .gamu-btn-danger {color:var(--g-danger-text)}
+.gamu-dialog .gamu-muted {color:var(--g-muted)}
+.gamu-dialog .gamu-input {background:var(--g-input);color:var(--g-text);border-color:var(--g-border)}
+.gamu-dialog .gamu-choice {background:var(--g-choice);color:var(--g-text);border-color:var(--g-border)}
+.gamu-dialog .gamu-choice-selected {background:var(--g-choice-active);color:var(--g-text)}
+.gamu-dialog .gamu-document, .gamu-dialog .gamu-document * {color:#000 !important; color-scheme:light;}
+/* En paneles de formularios, mantener explícitamente el texto visible al cambiar de tema. */
+.gamu-card h1,.gamu-card h2,.gamu-card h3,.gamu-card label {color:var(--g-text)}
+html.gamu-dark .gamu-card .text-slate-400,html.gamu-dark .gamu-card .text-slate-500,html.gamu-dark .gamu-card .text-slate-600 {color:var(--g-muted)}
+@media print { .gamu-dialog,.gamu-document {background:#fff !important;color:#000 !important;} }
