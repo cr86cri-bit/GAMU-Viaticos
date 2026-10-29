@@ -1,6 +1,77 @@
-.next
-node_modules
-.env*
-!.env.example
+# GAMU Viáticos — Next.js / TypeScript / Supabase / Vercel
+
+# Dependencies
+/node_modules/
+**/node_modules/
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build output and framework caches
+/.next/
+**/.next/
+/out/
+/build/
+/dist/
+/.turbo/
+/.vercel/
+/coverage/
 *.tsbuildinfo
+next-env.d.ts
+
+# Environment variables, private keys and credentials
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.mobileprovision
+*.provisionprofile
+service-account*.json
+*service_role*.json
+*credentials*.json
+
+# Operating system / IDE / logs
 .DS_Store
+Thumbs.db
+Desktop.ini
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+
+# Local backups and temporary exports
+/backups/
+/temp/
+/tmp/
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+
+# AI-generated documentation / notes: all Markdown files
+*.md
+*.MD
+
+# Keep package-lock.json (or another package-manager lockfile) tracked.
+# Keep source assets, SQL migrations, tsconfig, and package.json tracked.
