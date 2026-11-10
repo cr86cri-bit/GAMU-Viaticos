@@ -2,7 +2,7 @@
 import type {DatosPlanilla} from './planilla-oficial';
 import {montoLiteralBolivianos} from './monto-literal';
 const H=['NOMBRES Y APELLIDOS','CARGO','N° C.I.','FECHA','N° DE HOJA DE RUTA','DESCRIPCIÓN','DÍAS','VIÁTICO POR DÍA','TOTAL VIÁTICOS','RC-IVA 13%','VIÁTICO NETO','PASAJE CON FACTURA','PASAJE CON RECIBO','IUE 13%','IT 3%','PASAJE NETO','LÍQUIDO PAGABLE','FIRMA'];
-const widths=[27,31,19,22,18,33,11,18,20,19,20,18,18,18,16,20,22,60];
+const widths=[27,31,19,22,18,33,11,18,20,19,20,18,18,18,16,20,22,100];
 function dinero(n:number){return Number(n||0).toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function fecha(s:string){const [y,m,d]=s.split('-');return y&&m&&d?`${d}/${m}/${y}`:s}
 function fechaLiteral(s:string){
@@ -64,7 +64,7 @@ export async function exportarPlanillaPDF(info:DatosPlanilla):Promise<Blob>{
  styles:{font:'Twentieth Century',fontSize:9.4,cellPadding:2.1,halign:'center',valign:'middle',lineWidth:.25,lineColor:[0,0,0],overflow:'linebreak'},
  headStyles:{fillColor:rgb as [number,number,number],textColor,halign:'center',fontStyle:'bold',minCellHeight:28},
  columnStyles,
- didParseCell(data){if(data.section==='body'&&data.column.index===17){data.cell.styles.minCellHeight=26;}if(data.section==='body'&&data.row.index===rows.length){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[245,245,245];}if(data.section==='body'&&(data.column.index===11||data.column.index===12))data.cell.styles.fillColor=[242,233,226];},
+ didParseCell(data){if(data.section==='body'&&data.row.index<rows.length){data.cell.styles.minCellHeight=39;}if(data.section==='body'&&data.row.index===rows.length){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[245,245,245];}if(data.section==='body'&&(data.column.index===11||data.column.index===12))data.cell.styles.fillColor=[242,233,226];},
  didDrawPage(data){const bottom=doc.internal.pageSize.getHeight()-7;doc.setFontSize(7);doc.setFont('Twentieth Century','normal');doc.text(`GAMU · Gestión ${info.gestion} · Página ${data.pageNumber}`,pw-8,bottom,{align:'right'});}
  });
  const last=(doc as typeof doc&{lastAutoTable?:{finalY:number}}).lastAutoTable;

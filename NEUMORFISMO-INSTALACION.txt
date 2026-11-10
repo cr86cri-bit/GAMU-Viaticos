@@ -1,0 +1,7 @@
+GAMU Viáticos — Neumorfismo global
+
+Cambios: src/app/globals.css y cierre JSX en src/components/trips.tsx.
+Se mantienen rutas, datos, lógica y PDF/Excel sin cambios.
+El modo claro/oscuro usa las variables GAMU ya existentes.
+Antes de publicar: npm install && npm run build.
+No incluir archivos .env.local al subir a GitHub.

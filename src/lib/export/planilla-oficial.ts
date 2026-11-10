@@ -11,7 +11,7 @@ export type FilaPlanilla = {
 export type DatosPlanilla = { gestion: string; daf: string; descripcion: string; fecha: string; filas: FilaPlanilla[]; siglas?:string; color?:string };
 
 const WHITE='FFFFFFFF', PEACH='FFF8E2D4', GRID='FF000000', BLACK='FF000000';
-const widths=[14.5,21,12,15,11.2,15.3,6,8.6,12.6,11.3,11.2,9.6,9.4,11.2,11.2,12,11.2,34];
+const widths=[14.5,21,12,15,11.2,15.3,6,8.6,12.6,11.3,11.2,9.6,9.4,11.2,11.2,12,11.2,43];
 const headers=['NOMBRES Y\nAPELLIDOS','CARGO','N° C.I.','FECHA','N° DE\nHOJA DE\nRUTA','DESCRIPCIÓN','DÍAS','VIÁTICO\nPOR DÍA','TOTAL\nVIÁTICOS','RC-IVA\n13%','VIÁTICO\nNETO','PASAJE CON FACTURA','PASAJE CON RECIBO','IUE 13%','IT 3%','PASAJE\nNETO','LÍQUIDO\nPAGABLE','FIRMA'];
 const literals=['','','','','','','A','B','C=A*B','D=C*13%','E=C-D','F','H','I=H*13%','J=H*3%','K=F+(H-I-J)','L=E+K',''];
 const thin={style:'thin' as const,color:{argb:BLACK}};
@@ -42,7 +42,7 @@ export async function exportarPlanillaOficial(info:DatosPlanilla){
  for(let r=5;r<=7;r++)for(let col=1;col<=18;col++){const c=sheet.getRow(r).getCell(col);c.fill={type:'pattern',pattern:'solid',fgColor:{argb:HEADER}};c.border={top:thick,bottom:thick,left:thick,right:thick};}
  const base=8;const rows=info.filas.length||1;
  for(let i=0;i<rows;i++){
-  const r=base+i;sheet.getRow(r).height=info.filas.length?96:90;const f=info.filas[i];
+  const r=base+i;sheet.getRow(r).height=info.filas.length?125:115;const f=info.filas[i];
   if(f){const vals:any[]=[f.nombre,f.cargo,f.ci,boDate(f.fecha),f.hojaRuta,`${f.descripcion}\nSE PAGA EL ${f.porcentaje}%`,f.dias,f.viaticoDia,0,f.rciva,0,f.pasajeFactura,f.pasajeRecibo,0,0,0,0,''];
    vals.forEach((v,j)=>sheet.getRow(r).getCell(j+1).value=v);
    sheet.getCell(`I${r}`).value={formula:`G${r}*H${r}`,result:f.totalViatico};sheet.getCell(`J${r}`).value={formula:`MAX(0,ROUND(I${r}*13%,2)-ROUND(${Number(f.hotelTotal||0)}*13%,2))`,result:f.rciva};sheet.getCell(`K${r}`).value={formula:`I${r}-J${r}`,result:f.viaticoNeto};

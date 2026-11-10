@@ -27,6 +27,7 @@ export function Payroll() {
   const viajeParam = params.get("viaje");
 
   const [trips, setTrips] = useState<Row[]>([]);
+  const [allTrips, setAllTrips] = useState<Row[]>([]);
   const [chosen, setChosen] = useState<string[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
   const [hotelDocs, setHotelDocs] = useState<Row[]>([]);
@@ -34,6 +35,9 @@ export function Payroll() {
   const [direction, setDirection] = useState("");
   const [gestion, setGestion] = useState(String(new Date().getFullYear()));
   const [fecha, setFecha] = useState(todayLocal);
+  const [fechaManual, setFechaManual] = useState(false);
+  const [numeroManual, setNumeroManual] = useState("");
+  const [numeroEditado, setNumeroEditado] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [loadingRows, setLoadingRows] = useState(false);
@@ -61,14 +65,30 @@ export function Payroll() {
         .order("created_at", { ascending: false });
       if (!active) return;
       if (err) setError(friendlyError(err));
-      else setTrips(data ?? []);
+      else setAllTrips(data ?? []);
     })();
     return () => { active = false; };
   }, [supabase]);
 
+  // Se ofrecen solamente viajes con días registrados. Tras eliminar un viaje,
+  // su ID deja de formar parte del selector incluso si la URL contenía ?viaje=.
   useEffect(() => {
-    if (viajeParam) setChosen(old => old.includes(viajeParam) ? old : [viajeParam]);
-  }, [viajeParam]);
+    let active = true;
+    void (async () => {
+      const { data, error: err } = await supabase.from("viaje_dias").select("viaje_id");
+      if (!active) return;
+      if (err) { setError(friendlyError(err)); return; }
+      const validIds = new Set((data ?? []).map(d => d.viaje_id));
+      const valid = allTrips.filter(t => validIds.has(t.id));
+      setTrips(valid);
+      setChosen(old => {
+        const kept = old.filter(id => validIds.has(id) && valid.some(t => t.id === id));
+        if (viajeParam && validIds.has(viajeParam) && valid.some(t => t.id === viajeParam) && !kept.includes(viajeParam)) return [...kept, viajeParam];
+        return kept.length === old.length && kept.every((x,i) => x === old[i]) ? old : kept;
+      });
+    })();
+    return () => { active = false; };
+  }, [allTrips, supabase, viajeParam]);
 
   useEffect(() => {
     let active = true;
@@ -97,8 +117,17 @@ export function Payroll() {
     return () => { active = false; };
   }, [chosen, supabase]);
 
+  const ultimoDia = chosen.reduce((latest, id) => {
+    const t = trips.find(t => t.id === id);
+    const fin = String(t?.fecha_fin || t?.fecha_inicio || "");
+    return fin > latest ? fin : latest;
+  }, rows.reduce((latest, d) => d.fecha > latest ? d.fecha : latest, ""));
+  useEffect(() => {
+    if (ultimoDia && !fechaManual) setFecha(ultimoDia);
+  }, [ultimoDia, fechaManual]);
+
   const automaticDescription = [...new Set(chosen.map(id=>trips.find(t=>t.id===id)?.destinos?.nombre).filter(Boolean))].map(x=>`VIAJE A LA CIUDAD DE ${String(x).toUpperCase()}`).join("; ");
-  const emitKey = JSON.stringify({ direction, gestion, automaticDescription, fecha, chosen: [...chosen].sort() });
+  const emitKey = JSON.stringify({ direction, gestion, automaticDescription, fecha, numero:numeroEditado?numeroManual:"auto", chosen: [...chosen].sort() });
   const currentNumber = emitted?.key === emitKey ? emitted.numero : "";
 
   useEffect(() => {
@@ -150,7 +179,7 @@ export function Payroll() {
   const dir = directions.find(d => d.id === direction);
   const previewInfo: PreviewInfo = {
     gestion,
-    daf: currentNumber || nextNumber,
+    daf: currentNumber || numeroManual || nextNumber,
     fecha,
     descripcion: automaticDescription,
     siglas: dir?.siglas || "DAF",
@@ -165,17 +194,22 @@ export function Payroll() {
     if (!chosen.length) { setError("Selecciona al menos un viaje."); return; }
     if (loadingRows) { setError("Todavía se están cargando los días de los viajes."); return; }
     if (!rows.length) { setError("Los viajes seleccionados no tienen días registrados."); return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) { setError("Selecciona una fecha válida para la planilla."); return; }
+    if (numeroEditado && numeroManual && (!/^[1-9]\d{0,8}$/.test(numeroManual) || Number(numeroManual) > 2147483647)) {
+      setError("El número de documento debe ser un entero positivo de hasta 9 dígitos."); return;
+    }
     setPreview(mode);
   };
 
   const ensureEmitted = async (): Promise<string> => {
     if (emitted?.key === emitKey) return emitted.numero;
-    const { data, error: err } = await supabase.rpc("emitir_planilla_correlativa", {
+    const { data, error: err } = await supabase.rpc("emitir_planilla_con_numero", {
       p_direccion_id: direction,
       p_gestion: Number(gestion),
       p_fecha: fecha,
       p_descripcion: automaticDescription,
       p_viajes: chosen,
+      p_numero_solicitado: numeroEditado ? numeroManual.trim() || null : null,
     });
     if (err) throw err;
     const result = Array.isArray(data) ? data[0] : data;
@@ -254,18 +288,24 @@ export function Payroll() {
           <Field label="Gestión">
             <Input value={gestion} maxLength={4} onChange={e => setGestion(e.target.value)} />
           </Field>
-          <Field label="N.º de documento (correlativo)">
-            <Input readOnly value={currentNumber || nextNumber} title="Número estimado hasta confirmar la primera descarga" />
+          <Field label="N.º de documento">
+            <Input inputMode="numeric" pattern="[1-9][0-9]*" value={currentNumber || (numeroEditado ? numeroManual : /^\d+$/.test(nextNumber) ? nextNumber : "")}
+              placeholder={nextNumber === "—" ? "Selecciona dirección" : `Sugerido: ${nextNumber}`}
+              disabled={Boolean(currentNumber)}
+              onChange={e => {setNumeroEditado(true);setNumeroManual(e.target.value.replace(/\D/g, ""));}}
+              title="Puedes escribir otro número. Si lo dejas vacío, se asignará el siguiente automáticamente." />
+            <div className="mt-1 flex items-center justify-between gap-2 text-xs gamu-muted"><span>Siguiente sugerido: <strong>{nextNumber}</strong>. {currentNumber ? 'Número asignado.' : 'Puedes editarlo.'}</span>{numeroEditado && !currentNumber && <button type="button" className="underline" onClick={()=>{setNumeroManual('');setNumeroEditado(false)}}>Usar sugerido</button>}</div>
           </Field>
-          <Field label="Fecha de emisión">
-            <Input type="date" value={fecha} onChange={e => setFecha(e.target.value)} />
+          <Field label="Fecha de planilla">
+            <Input type="date" value={fecha} onChange={e => { setFechaManual(true); setFecha(e.target.value); }} />
+            <p className="mt-1 text-xs gamu-muted">Se propone el último día del viaje{ultimoDia ? ` (${ultimoDia.split("-").reverse().join("/")})` : ""}. Puedes modificarla.</p>
           </Field>
         </div>
         <div className="mt-3">
           <TripPicker trips={trips} chosen={chosen} onChange={setChosen} />
         </div>
         <p className="mt-3 text-xs text-slate-500">
-          El número mostrado es provisional hasta confirmar la primera exportación o impresión.
+          Si no escribes un número, se usará el siguiente disponible. La fecha de planilla inicia con la fecha final del viaje y puede editarse.
         </p>
       </Card>
 

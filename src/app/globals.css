@@ -104,3 +104,134 @@ html.gamu-dark .gamu-dialog {color-scheme:dark;}
 .gamu-card h1,.gamu-card h2,.gamu-card h3,.gamu-card label {color:var(--g-text)}
 html.gamu-dark .gamu-card .text-slate-400,html.gamu-dark .gamu-card .text-slate-500,html.gamu-dark .gamu-card .text-slate-600 {color:var(--g-muted)}
 @media print { .gamu-dialog,.gamu-document {background:#fff !important;color:#000 !important;} }
+
+
+/* GAMU 2026 · Neumorfismo institucional. Aplicado a toda la interfaz web.
+   Los estilos de impresión y la hoja de previsualización quedan excluidos. */
+:root {
+  --neu-canvas:#DCE3E5;
+  --neu-surface:#E5ECEE;
+  --neu-raised:#E5ECEE;
+  --neu-inset:#DFE7E9;
+  --neu-highlight:#FFFFFF;
+  --neu-shadow:#A5B4BD;
+  --neu-line:#B7C6CC;
+  --neu-ring:#4A5C6A;
+  --neu-ink:#06141B;
+  --neu-secondary:#354B59;
+  --neu-accent:#253745;
+  --neu-accent-text:#FFFFFF;
+  --neu-shadow-raised:7px 7px 17px rgba(100,122,136,.31),-7px -7px 17px rgba(255,255,255,.96);
+  --neu-shadow-subtle:4px 4px 10px rgba(100,122,136,.23),-4px -4px 10px rgba(255,255,255,.88);
+  --neu-shadow-pressed:inset 4px 4px 9px rgba(103,126,143,.27),inset -4px -4px 9px rgba(255,255,255,.88);
+}
+html.gamu-dark {
+  --neu-canvas:#06141B;
+  --neu-surface:#11212D;
+  --neu-raised:#172B39;
+  --neu-inset:#102330;
+  --neu-highlight:#314756;
+  --neu-shadow:#030A0F;
+  --neu-line:#445D6B;
+  --neu-ring:#9BA8AB;
+  --neu-ink:#F3F7F8;
+  --neu-secondary:#CCD0CF;
+  --neu-accent:#4A5C6A;
+  --neu-accent-text:#FFFFFF;
+  --neu-shadow-raised:7px 7px 16px rgba(0,6,11,.7),-6px -6px 15px rgba(57,79,95,.47);
+  --neu-shadow-subtle:4px 4px 10px rgba(0,6,11,.58),-4px -4px 10px rgba(54,79,95,.39);
+  --neu-shadow-pressed:inset 5px 5px 10px rgba(0,6,11,.7),inset -4px -4px 9px rgba(52,78,96,.38);
+}
+@media screen {
+  html,body {background:var(--neu-canvas);color:var(--neu-ink)}
+  .gamu-text,.gamu-label {color:var(--neu-ink)}
+  .gamu-muted {color:var(--neu-secondary)}
+  .gamu-card,.gamu-panel,.gamu-dialog {
+    background:var(--neu-surface);color:var(--neu-ink);
+    border:1px solid var(--neu-line);
+    box-shadow:var(--neu-shadow-raised);
+  }
+  .gamu-card,.gamu-panel {border-radius:22px}
+  .gamu-dialog {border-radius:24px;box-shadow:0 20px 80px rgba(0,0,0,.27),var(--neu-shadow-subtle)}
+  .gamu-panel-header,.gamu-icon-box,.gamu-badge,.gamu-count {
+    background:var(--neu-raised);color:var(--neu-ink);border-color:var(--neu-line);
+    box-shadow:var(--neu-shadow-subtle);
+  }
+  .gamu-input, .gamu-dialog .gamu-input,
+  .gamu-dialog input:not([type=checkbox]):not([type=radio]):not([type=color]),
+  .gamu-dialog select,.gamu-dialog textarea {
+    background:var(--neu-inset);color:var(--neu-ink);
+    border:1px solid var(--neu-line);border-radius:14px;
+    box-shadow:var(--neu-shadow-pressed);
+  }
+  .gamu-input::placeholder,.gamu-dialog input::placeholder,
+  .gamu-dialog textarea::placeholder {color:var(--neu-secondary);opacity:1}
+  .gamu-btn-primary,.gamu-chip,.gamu-choice,
+  .gamu-sidebar-toggle,.theme-toggle {
+    border:1px solid var(--neu-line);
+    border-radius:14px;
+    box-shadow:var(--neu-shadow-subtle);
+    transition:box-shadow .16s ease,transform .16s ease,background .16s ease;
+  }
+  .gamu-btn-primary {background:var(--neu-accent);color:var(--neu-accent-text)}
+  .gamu-btn-primary:hover {background:var(--neu-accent);filter:brightness(1.12);transform:translateY(-1px)}
+  .gamu-chip,.gamu-choice,.theme-toggle {background:var(--neu-raised);color:var(--neu-ink)}
+  .gamu-chip:hover,.gamu-choice:hover,.theme-toggle:hover {background:var(--neu-surface);transform:translateY(-1px)}
+  .gamu-chip-selected,.gamu-choice-selected,.gamu-sidebar-active {
+    background:var(--neu-inset);color:var(--neu-ink);
+    border-color:var(--neu-line);box-shadow:var(--neu-shadow-pressed);
+  }
+  .gamu-btn-primary:active,.gamu-chip:active,.gamu-choice:active,.theme-toggle:active,
+  .gamu-sidebar-link:active {transform:translateY(1px);box-shadow:var(--neu-shadow-pressed)}
+  .gamu-sidebar,.gamu-topbar,.gamu-bottomnav {
+    background:var(--neu-surface);color:var(--neu-ink);border-color:var(--neu-line);
+  }
+  .gamu-sidebar {box-shadow:4px 0 17px rgba(16,34,46,.12)}
+  .gamu-sidebar-link,.gamu-sidebar-logout {color:var(--neu-ink);border-radius:14px}
+  .gamu-sidebar-link:hover,.gamu-sidebar-logout:hover {
+    background:var(--neu-raised);box-shadow:var(--neu-shadow-subtle);
+  }
+  .gamu-sidebar-active {font-weight:700}
+  .gamu-sidebar-toggle {background:var(--neu-raised);color:var(--neu-ink)}
+  .gamu-trip-card {
+    background:var(--neu-raised);color:var(--neu-ink);border:1px solid var(--neu-line);
+    border-radius:16px;box-shadow:var(--neu-shadow-subtle);
+  }
+  .gamu-trip-card:hover {box-shadow:var(--neu-shadow-raised);transform:translateY(-1px)}
+  .gamu-trip-card>p:first-child{color:var(--neu-ink)}
+  .gamu-trip-card>p:nth-child(2){color:var(--neu-secondary)}
+  .gamu-table {border-collapse:separate;border-spacing:0 5px}
+  .gamu-table thead,.gamu-table thead tr,.gamu-table thead th {
+    background:var(--neu-accent)!important;color:var(--neu-accent-text)!important
+  }
+  .gamu-table thead th:first-child{border-radius:12px 0 0 12px}
+  .gamu-table thead th:last-child{border-radius:0 12px 12px 0}
+  .gamu-table tbody tr {background:var(--neu-raised);box-shadow:var(--neu-shadow-subtle)}
+  .gamu-table tbody tr:hover{background:var(--neu-inset)}
+  .gamu-table tbody td{color:var(--neu-ink)}
+  .gamu-table tbody td:first-child{border-radius:12px 0 0 12px}
+  .gamu-table tbody td:last-child{border-radius:0 12px 12px 0}
+  /* Compatibilidad para tarjetas antiguas no migradas todavía a clases semánticas */
+  .gamu-card .bg-white:not(.gamu-document),
+  .gamu-dialog .bg-white:not(.gamu-document){background:var(--neu-raised);color:var(--neu-ink)}
+  .gamu-card .bg-slate-50,.gamu-dialog .bg-slate-50 {background:var(--neu-inset);color:var(--neu-ink)}
+  .gamu-card .text-slate-500,.gamu-card .text-slate-600,
+  .gamu-dialog .text-slate-500,.gamu-dialog .text-slate-600{color:var(--neu-secondary)}
+  .gamu-card h1,.gamu-card h2,.gamu-card h3,.gamu-card label,
+  .gamu-dialog h1,.gamu-dialog h2,.gamu-dialog h3,.gamu-dialog label {color:var(--neu-ink)}
+  /* Los estilos de contraste prevalecen también en los diálogos anidados */
+  .gamu-dialog .gamu-btn-primary {color:var(--neu-accent-text)}
+  input:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible{
+    outline:2px solid var(--neu-ring);outline-offset:3px;
+  }
+  /* La planilla es un documento oficial: no recibe sombras ni cambio de fondo. */
+  .gamu-document {background:#fff!important;color:#000!important;box-shadow:none!important;color-scheme:light}
+  .gamu-document * {color:#000!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .gamu-btn-primary,.gamu-chip,.gamu-choice,.theme-toggle,.gamu-trip-card {transition:none!important;transform:none!important}
+}
+@media print {
+ .gamu-card,.gamu-panel,.gamu-dialog,.gamu-table tbody tr {box-shadow:none!important}
+ body{background:#fff!important;color:#000!important}
+}
