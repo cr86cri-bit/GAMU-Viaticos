@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from 'react';
-import { CalendarDays, Check, CheckCheck, ClipboardList, MapPin, Search, X } from 'lucide-react';
+import { CalendarDays, Check, CheckCheck, ClipboardList, FileCheck2, MapPin, Search, X, SlidersHorizontal } from 'lucide-react';
 
 type Trip = {
   id: string;
@@ -9,6 +9,7 @@ type Trip = {
   fecha_inicio?: string;
   fecha_fin?: string;
   estado?: string;
+  created_at?: string;
   funcionarios?: { nombres?: string; apellidos?: string } | null;
   destinos?: { nombre?: string } | null;
 };
@@ -17,6 +18,7 @@ type Props = {
   trips: Trip[];
   chosen: string[];
   onChange: (ids: string[]) => void;
+  planillasPorViaje?: Record<string, string[]>;
 };
 
 function prettyDate(value?: string) {
@@ -25,15 +27,17 @@ function prettyDate(value?: string) {
   return y && m && d ? `${d}/${m}/${y}` : value;
 }
 
-export function TripPicker({ trips, chosen, onChange }: Props) {
+export function TripPicker({ trips, chosen, onChange, planillasPorViaje = {} }: Props) {
   const [query, setQuery] = useState('');
   const [onlySelected, setOnlySelected] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortDate, setSortDate] = useState<'newest' | 'oldest'>('newest');
   const normalized = query.toLocaleLowerCase('es').trim();
   const filtered = useMemo(() => trips.filter(t => {
     if (onlySelected && !chosen.includes(t.id)) return false;
     const searchable = [t.funcionarios?.nombres, t.funcionarios?.apellidos, t.destinos?.nombre, t.nro_hoja_ruta, t.fecha_inicio].join(' ').toLocaleLowerCase('es');
     return searchable.includes(normalized);
-  }), [trips, chosen, normalized, onlySelected]);
+  }).sort((a,b) => sortDate === 'newest' ? (b.created_at ?? '').localeCompare(a.created_at ?? '') : (a.created_at ?? '').localeCompare(b.created_at ?? '')), [trips, chosen, normalized, onlySelected, sortDate]);
   const selectedVisible = filtered.filter(t => chosen.includes(t.id)).length;
   const allVisibleSelected = filtered.length > 0 && selectedVisible === filtered.length;
 
@@ -64,6 +68,7 @@ export function TripPicker({ trips, chosen, onChange }: Props) {
           {query && <button aria-label="Borrar búsqueda" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-500 hover:bg-slate-100" onClick={() => setQuery('')} type="button"><X size={16} /></button>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={()=>setShowFilters(true)} aria-label="Filtros de viajes" className="gamu-choice inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 text-xs font-semibold"><SlidersHorizontal size={16}/> Filtros</button>
           <button type="button" aria-pressed={onlySelected} onClick={() => setOnlySelected(v => !v)} className={`min-h-11 rounded-xl border px-3 text-xs font-semibold transition ${onlySelected ? 'gamu-chip-selected' : 'gamu-chip'}`}>Solo seleccionados</button>
           <button type="button" disabled={!filtered.length} onClick={toggleVisible} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border gamu-chip px-3 text-xs font-semibold transition hover:bg-emerald-50 disabled:opacity-40"><CheckCheck size={15} /> {allVisibleSelected ? 'Deseleccionar visibles' : 'Seleccionar visibles'}</button>
         </div>
@@ -80,6 +85,16 @@ export function TripPicker({ trips, chosen, onChange }: Props) {
             <span className="min-w-0 flex-1 space-y-2">
               <span className="flex flex-wrap items-start justify-between gap-2"><span className="break-words text-sm font-bold gamu-text">{name}</span><span className="rounded-md gamu-badge px-2 py-1 text-xs font-semibold">Hoja N.º {t.nro_hoja_ruta || '—'}</span></span>
               <span className="flex flex-wrap gap-x-4 gap-y-1 text-xs gamu-muted"><span className="inline-flex items-center gap-1"><MapPin size={14} className="text-emerald-700" />{t.destinos?.nombre || 'Sin destino'}</span><span className="inline-flex items-center gap-1"><CalendarDays size={14} />{prettyDate(t.fecha_inicio)}{t.fecha_fin && t.fecha_fin !== t.fecha_inicio ? ` – ${prettyDate(t.fecha_fin)}` : ''}</span></span>
+              {(planillasPorViaje[t.id] ?? []).length > 0 && (
+                <span className="flex flex-wrap items-center gap-1.5 pt-1" aria-label="Planillas a las que pertenece este viaje">
+                  {(planillasPorViaje[t.id] ?? []).map((documento, index) => (
+                    <span key={`${t.id}-${documento}-${index}`} className="gamu-issued-label inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold leading-snug">
+                      <FileCheck2 size={14} className="shrink-0" />
+                      <span className="break-words">Incluido en planilla {documento}</span>
+                    </span>
+                  ))}
+                </span>
+              )}
             </span>
           </label>;
         })}
@@ -87,5 +102,12 @@ export function TripPicker({ trips, chosen, onChange }: Props) {
       </div>
       {chosen.length > 0 && <div className="flex items-center justify-between gap-3 rounded-xl gamu-count px-3 py-2.5 text-xs"><span><strong>{chosen.length}</strong> {chosen.length === 1 ? 'viaje listo' : 'viajes listos'} para generar la planilla</span><button type="button" onClick={() => onChange([])} className="shrink-0 font-bold underline underline-offset-2 hover:text-emerald-950">Limpiar selección</button></div>}
     </div>
+    {showFilters && <div role="dialog" aria-modal="true" aria-label="Filtros de viajes" className="fixed inset-0 z-[100] bg-[#06141B]/75 flex items-center justify-center p-3" onMouseDown={e=>{if(e.target===e.currentTarget)setShowFilters(false)}}>
+       <div className="gamu-dialog w-full max-w-sm rounded-2xl p-5 shadow-xl"><div className="flex items-center justify-between"><h3 className="font-bold text-lg">Filtrar viajes</h3><button aria-label="Cerrar filtros" onClick={()=>setShowFilters(false)} type="button"><X size={19}/></button></div>
+       <p className="gamu-muted text-xs mt-2 mb-4">Ordenar por fecha de creación del viaje</p>
+       <div className="grid gap-2"><label className="gamu-choice rounded-xl border p-3 text-sm"><input type="radio" checked={sortDate==='newest'} onChange={()=>setSortDate('newest')}/> Más nuevo primero</label>
+       <label className="gamu-choice rounded-xl border p-3 text-sm"><input type="radio" checked={sortDate==='oldest'} onChange={()=>setSortDate('oldest')}/> Más antiguo primero</label></div>
+       <button type="button" className="mt-4 w-full rounded-xl bg-[#253745] py-3 font-semibold text-white" onClick={()=>setShowFilters(false)}>Aplicar filtros</button></div>
+     </div>}
   </section>;
 }

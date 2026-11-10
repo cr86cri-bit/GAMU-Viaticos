@@ -11,7 +11,7 @@ export type FilaPlanilla = {
 export type DatosPlanilla = { gestion: string; daf: string; descripcion: string; fecha: string; filas: FilaPlanilla[]; siglas?:string; color?:string };
 
 const WHITE='FFFFFFFF', PEACH='FFF8E2D4', GRID='FF000000', BLACK='FF000000';
-const widths=[14.5,21,12,15,11.2,15.3,6,8.6,12.6,11.3,11.2,9.6,9.4,11.2,11.2,12,11.2,43];
+const widths=[18,21,12,15,11.2,18,6,8.6,12.6,11.3,11.2,9.6,9.4,11.2,11.2,12,11.2,55];
 const headers=['NOMBRES Y\nAPELLIDOS','CARGO','N° C.I.','FECHA','N° DE\nHOJA DE\nRUTA','DESCRIPCIÓN','DÍAS','VIÁTICO\nPOR DÍA','TOTAL\nVIÁTICOS','RC-IVA\n13%','VIÁTICO\nNETO','PASAJE CON FACTURA','PASAJE CON RECIBO','IUE 13%','IT 3%','PASAJE\nNETO','LÍQUIDO\nPAGABLE','FIRMA'];
 const literals=['','','','','','','A','B','C=A*B','D=C*13%','E=C-D','F','H','I=H*13%','J=H*3%','K=F+(H-I-J)','L=E+K',''];
 const thin={style:'thin' as const,color:{argb:BLACK}};
@@ -27,7 +27,7 @@ export async function exportarPlanillaOficial(info:DatosPlanilla){
  const center={vertical:'middle' as const,horizontal:'center' as const,wrapText:true};
  sheet.mergeCells('A1:A4');sheet.mergeCells('B1:E1');sheet.mergeCells('B2:E2');sheet.mergeCells('B3:E3');sheet.mergeCells('G4:P4');sheet.mergeCells('P1:Q1');
  sheet.getCell('B1').value='GOBIERNO AUTÓNOMO MUNICIPAL DE UYUNI';sheet.getCell('B1').font={name:'Twentieth Century',size:12,bold:true};
- sheet.getCell('B2').value='PRIMERA SECCIÓN - PROVINCIA ANTONIO QUIJARRO';sheet.getCell('B2').font={name:'Twentieth Century',size:9,italic:true};
+ sheet.getCell('B2').value='PRIMERA SECCIÓN - PROVINCIA ANTONIO QUIJARRO';sheet.getCell('B2').font={name:'Twentieth Century',size:9,italic:true,bold:true};
  sheet.getCell('B3').value='POTOSÍ - BOLIVIA';sheet.getCell('B3').alignment=center;sheet.getCell('B3').font={name:'Twentieth Century',size:9};
  sheet.getCell('P1').value=`N.º DOCUMENTO`;sheet.getCell('P1').alignment=center;
  sheet.getCell('R1').value=info.daf||'';sheet.getCell('R1').alignment=center;
@@ -36,7 +36,7 @@ export async function exportarPlanillaOficial(info:DatosPlanilla){
  for(let i=1;i<=18;i++){
   const letter=sheet.getColumn(i).letter;
   if(i<=6 || i===18){sheet.mergeCells(`${letter}5:${letter}7`);}else{sheet.mergeCells(`${letter}5:${letter}6`);}
-  const top=sheet.getCell(`${letter}5`);top.value=headers[i-1];top.font={name:'Twentieth Century',bold:true,size:i===12||i===13?10:11};top.alignment={...center,textRotation:i===6?45:i===8||i===12||i===13?90:0};
+  const top=sheet.getCell(`${letter}5`);top.value=headers[i-1];top.font={name:'Twentieth Century',bold:true,size:i===12||i===13?9:10};top.alignment={...center,textRotation:i===6?45:i===8||i===12||i===13?90:0};
   if(i>6&&i<18){const sub=sheet.getCell(`${letter}7`);sub.value=literals[i-1];sub.font={name:'Twentieth Century',size:12,bold:true};sub.alignment=center;}
  }
  for(let r=5;r<=7;r++)for(let col=1;col<=18;col++){const c=sheet.getRow(r).getCell(col);c.fill={type:'pattern',pattern:'solid',fgColor:{argb:HEADER}};c.border={top:thick,bottom:thick,left:thick,right:thick};}
@@ -49,7 +49,7 @@ export async function exportarPlanillaOficial(info:DatosPlanilla){
    sheet.getCell(`N${r}`).value={formula:`ROUND(M${r}*13%,2)`,result:f.iue};sheet.getCell(`O${r}`).value={formula:`ROUND(M${r}*3%,2)`,result:f.it};
    sheet.getCell(`P${r}`).value={formula:`L${r}+M${r}-N${r}-O${r}`,result:f.pasajeNeto};sheet.getCell(`Q${r}`).value={formula:`K${r}+P${r}`,result:f.liquido};
   }
-  for(let c=1;c<=18;c++){const cell=sheet.getRow(r).getCell(c);cell.border={top:thin,bottom:thin,left:thin,right:thin};cell.alignment=center;cell.font={name:'Twentieth Century',size:12,color:{argb:'FF000000'}};if(c>=8&&c<=17)cell.numFmt='#,##0.00;[Red]-#,##0.00';}
+  for(let c=1;c<=18;c++){const cell=sheet.getRow(r).getCell(c);cell.border={top:thin,bottom:thin,left:thin,right:thin};cell.alignment=center;cell.font={name:'Twentieth Century',size:12,bold:c===1,color:{argb:'FF000000'}};if(c>=8&&c<=17)cell.numFmt='#,##0.00;[Red]-#,##0.00';}
   for(let c of [12,13])sheet.getRow(r).getCell(c).fill={type:'pattern',pattern:'solid',fgColor:{argb:PEACH}};
  }
  const end=base+rows-1;const total=end+1;sheet.getRow(total).height=20;sheet.mergeCells(`A${total}:G${total}`);sheet.getCell(`A${total}`).value='TOTAL';sheet.getCell(`A${total}`).alignment={horizontal:'right'};

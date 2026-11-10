@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { FileDown, FileSpreadsheet, Printer } from "lucide-react";
+import { FileDown, FileSpreadsheet, Printer, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/error-messages";
 import { exportarPlanillaOficial, type FilaPlanilla } from "@/lib/export/planilla-oficial";
@@ -10,6 +10,9 @@ import { exportarPlanillaPDF } from "@/lib/export/planilla-pdf";
 import { Alert, Card, Field, Input, PageHeader, Select } from "@/components/ui";
 import { PayrollPreviewModal, type PreviewInfo } from "@/components/payroll-preview-modal";
 import { TripPicker } from "@/components/trip-picker";
+import { IssuedPayrolls } from "@/components/issued-payrolls";
+import { EditIssuedPayroll, type EdicionPlanilla } from "@/components/edit-issued-payroll";
+import { crearFilasPlanilla, descripcionViajes } from "@/lib/payroll-data";
 
 type Row = { id: string; [key: string]: any };
 type ExportMode = "pdf" | "excel" | "print";
@@ -21,7 +24,7 @@ const todayLocal = () => {
   return new Date(today.getTime() - offset).toISOString().slice(0, 10);
 };
 
-export function Payroll() {
+export function Payroll({ mode = "create" }: { mode?: "create" | "issued" }) {
   const supabase = useMemo(() => createClient(), []);
   const params = useSearchParams();
   const viajeParam = params.get("viaje");
@@ -32,6 +35,10 @@ export function Payroll() {
   const [rows, setRows] = useState<Row[]>([]);
   const [hotelDocs, setHotelDocs] = useState<Row[]>([]);
   const [directions, setDirections] = useState<Row[]>([]);
+  const [issued, setIssued] = useState<Row[]>([]);
+  const [links, setLinks] = useState<Row[]>([]);
+  const [historyPreview, setHistoryPreview] = useState<PreviewInfo | null>(null);
+  const [editIssued, setEditIssued] = useState<EdicionPlanilla | null>(null);
   const [direction, setDirection] = useState("");
   const [gestion, setGestion] = useState(String(new Date().getFullYear()));
   const [fecha, setFecha] = useState(todayLocal);
@@ -69,6 +76,69 @@ export function Payroll() {
     })();
     return () => { active = false; };
   }, [supabase]);
+
+  const refreshIssued = useCallback(async () => {
+    const {data: docs, error: err} = await supabase.from('planillas')
+      .select('*,direcciones(siglas,nombre,color)').order('created_at', {ascending:false});
+    if(err) {setError(friendlyError(err));return;}
+    const {data: refs,error: refsError}=await supabase.from('planilla_viajes').select('planilla_id,viaje_id');
+    if(refsError) {setError(friendlyError(refsError));return;}
+    setIssued(docs??[]);
+    setLinks(refs??[]);
+  }, [supabase]);
+  useEffect(()=>{void refreshIssued()},[refreshIssued]);
+  const assigned = useMemo(()=>{
+    const result:Record<string,string[]>={};
+    const byId=new Map(issued.map(p=>[p.id,p]));
+    for(const link of links){const p=byId.get(link.planilla_id);if(!p)continue;
+      (result[link.viaje_id]??=[]).push(`${p.direcciones?.siglas??'DOC'} N.º ${p.nro_daf}/${p.gestion}`);
+    }
+    return result;
+  },[issued,links]);
+
+  async function buildIssuedPreview(p:any):Promise<PreviewInfo> {
+    if(p.snapshot?.filas?.length && p.snapshot?.gestion && p.snapshot?.daf){
+      return p.snapshot as PreviewInfo;
+    }
+    const ids=links.filter(l=>l.planilla_id===p.id).map(l=>l.viaje_id);
+    if(!ids.length)throw new Error('La planilla no tiene viajes vinculados.');
+    const {data: dias,error: errD}=await supabase.from('viaje_dias').select('*').in('viaje_id',ids).order('fecha');
+    if(errD)throw errD;
+    if(!dias?.length)throw new Error('Los viajes vinculados no tienen detalle diario.');
+    const {data: docs,error:errC}=await supabase.from('comprobantes').select('*').eq('tipo','hospedaje').in('viaje_dia_id',dias.map(d=>d.id));
+    if(errC)throw errC;
+    const selected=allTrips.filter(t=>ids.includes(t.id));
+    if(selected.length!==ids.length)throw new Error('No se encuentran todos los viajes de la planilla.');
+    const dir=directions.find(d=>d.id===p.direccion_id);
+    return {gestion:String(p.gestion),daf:String(p.nro_daf),fecha:p.fecha,
+      descripcion:p.descripcion||descripcionViajes(selected),siglas:dir?.siglas??p.direcciones?.siglas??'GAMU',
+      color:dir?.color??p.direcciones?.color??'#CCD0CF',filas:crearFilasPlanilla(selected,dias,docs??[])};
+  }
+  async function prepareHistory(p:any, mode:ExportMode) {
+    setBusy(true);setError('');
+    try{const info=await buildIssuedPreview(p);setHistoryPreview(info);setPreview(mode);}
+    catch(e){setError(friendlyError(e));}finally{setBusy(false)}
+  }
+  async function startHistoricalEdit(p:any) {
+    setError('');
+    const ids=links.filter(l=>l.planilla_id===p.id).map(l=>l.viaje_id);
+    setEditIssued({id:p.id,direccion_id:p.direccion_id,gestion:String(p.gestion),numero:String(p.nro_daf),fecha:p.fecha,viajes:ids});
+  }
+  async function saveHistoricalEdit(ed:EdicionPlanilla) {
+    if(!ed.direccion_id || !/^\d{4}$/.test(ed.gestion) || !/^[1-9]\d{0,8}$/.test(ed.numero) || !ed.fecha || !ed.viajes.length){setError('Completa todos los campos y selecciona viajes válidos.');return;}
+    setBusy(true);setError('');
+    try {
+      const data=allTrips.filter(t=>ed.viajes.includes(t.id));
+      const {error:err}=await supabase.rpc('editar_planilla_emitida',{
+        p_planilla:ed.id,p_direccion_id:ed.direccion_id,p_gestion:Number(ed.gestion),
+        p_numero:ed.numero,p_fecha:ed.fecha,p_viajes:ed.viajes,p_descripcion:descripcionViajes(data),
+      });
+      if(err)throw err;
+      setEditIssued(null);
+      await refreshIssued();
+    }catch(e){setError(friendlyError(e));}
+    finally{setBusy(false)}
+  }
 
   // Se ofrecen solamente viajes con días registrados. Tras eliminar un viaje,
   // su ID deja de formar parte del selector incluso si la URL contenía ?viaje=.
@@ -151,30 +221,7 @@ export function Payroll() {
   }, [direction, gestion, supabase, emitted]);
 
   const infoByTrip = useMemo(() => new Map(trips.map(t => [t.id, t])), [trips]);
-  const exportRows: FilaPlanilla[] = useMemo(() => rows.map(d => {
-    const t = infoByTrip.get(d.viaje_id);
-    return {
-      nombre: `${t?.funcionarios?.apellidos ?? ""} ${t?.funcionarios?.nombres ?? ""}`.trim(),
-      cargo: t?.funcionarios?.cargos?.nombre ?? "",
-      ci: String(t?.funcionarios?.ci ?? ""),
-      fecha: d.fecha,
-      porcentaje: Number(d.porcentaje ?? 0),
-      hotelTotal: hotelDocs.filter(c=>c.viaje_dia_id===d.id).reduce((a,c)=>a+Number(c.monto),0),
-      hojaRuta: String(t?.nro_hoja_ruta ?? ""),
-      descripcion: `VIAJE A LA CIUDAD DE ${String(t?.destinos?.nombre ?? "DESTINO").toUpperCase()}` + (hotelDocs.some(c=>c.viaje_dia_id===d.id)?`\nFACTURAS HOTEL: Bs ${hotelDocs.filter(c=>c.viaje_dia_id===d.id).reduce((a,c)=>a+Number(c.monto),0).toFixed(2)}`:""),
-      dias: 1,
-      viaticoDia: Number(d.viatico_dia ?? 0),
-      totalViatico: Number(d.total_viatico ?? 0),
-      rciva: Number(d.rciva_ajuste ?? 0),
-      viaticoNeto: Number(d.viatico_neto ?? 0),
-      pasajeFactura: Number(d.pasaje_factura ?? 0),
-      pasajeRecibo: Number(d.pasaje_recibo ?? 0),
-      iue: Number(d.iue_retencion ?? 0),
-      it: Number(d.it_retencion ?? 0),
-      pasajeNeto: Number(d.pasaje_neto ?? 0),
-      liquido: Number(d.liquido_pagable ?? 0),
-    };
-  }), [rows, infoByTrip, hotelDocs]);
+  const exportRows: FilaPlanilla[] = useMemo(() => crearFilasPlanilla(trips,rows,hotelDocs),[trips,rows,hotelDocs]);
 
   const dir = directions.find(d => d.id === direction);
   const previewInfo: PreviewInfo = {
@@ -216,6 +263,10 @@ export function Payroll() {
     if (!result?.numero_daf) throw new Error("No se pudo asignar el número de documento.");
     const numero = String(result.numero_daf);
     setEmitted({ id: String(result.planilla_id), numero, key: emitKey });
+    const snapshot = {...previewInfo,daf:numero};
+    const {error: snapshotError}=await supabase.from('planillas').update({snapshot}).eq('id',result.planilla_id);
+    if(snapshotError)throw new Error('El documento se emitió, pero no se pudo guardar su copia histórica. Recarga el historial antes de reintentar: '+friendlyError(snapshotError));
+    await refreshIssued();
     setNextNumber(numero);
     return numero;
   };
@@ -242,8 +293,8 @@ export function Payroll() {
     setBusy(true);
     setError("");
     try {
-      const numero = await ensureEmitted();
-      const fileInfo = { ...previewInfo, daf: numero };
+      const numero = historyPreview?.daf ?? await ensureEmitted();
+      const fileInfo = historyPreview ?? { ...previewInfo, daf: numero };
       const blob = preview === "excel"
         ? await exportarPlanillaOficial(fileInfo)
         : await exportarPlanillaPDF(fileInfo);
@@ -252,9 +303,9 @@ export function Payroll() {
         printWindow!.location.href = url;
         window.setTimeout(() => URL.revokeObjectURL(url), 120000);
       } else {
-        downloadBlob(blob, `planilla-${dir?.siglas || "GAMU"}-${gestion}-${numero}.${preview === "pdf" ? "pdf" : "xlsx"}`);
+        downloadBlob(blob, `planilla-${fileInfo.siglas || "GAMU"}-${fileInfo.gestion}-${numero}.${preview === "pdf" ? "pdf" : "xlsx"}`);
       }
-      setPreview(null);
+      setPreview(null);setHistoryPreview(null);
     } catch (e) {
       printWindow?.close();
       setError(friendlyError(e));
@@ -271,7 +322,7 @@ export function Payroll() {
 
   return (
     <>
-      <PageHeader
+      {mode === "create" && <><PageHeader
         title="Planillas de pasajes y viáticos"
         description="Selecciona los viajes y revisa el documento antes de descargarlo"
       />
@@ -302,7 +353,7 @@ export function Payroll() {
           </Field>
         </div>
         <div className="mt-3">
-          <TripPicker trips={trips} chosen={chosen} onChange={setChosen} />
+          <TripPicker trips={trips} chosen={chosen} onChange={setChosen} planillasPorViaje={assigned} />
         </div>
         <p className="mt-3 text-xs text-slate-500">
           Si no escribes un número, se usará el siguiente disponible. La fecha de planilla inicia con la fecha final del viaje y puede editarse.
@@ -336,13 +387,20 @@ export function Payroll() {
         ))}
       </div>
 
+      </>}
+      {mode === "issued" && <>
+        <PageHeader title="Planillas emitidas" description="Consulta, visualiza, edita, descarga o reimprime documentos registrados" />
+        {error && !preview && <Alert error>{error}</Alert>}
+        <IssuedPayrolls documentos={issued} busy={busy} onView={p=>{void prepareHistory(p,'pdf')}} onEdit={p=>{void startHistoricalEdit(p)}} onPdf={p=>{void prepareHistory(p,'pdf')}} onPrint={p=>{void prepareHistory(p,'print')}} />
+      </>}
+      {editIssued && <EditIssuedPayroll key={editIssued.id} base={editIssued} directions={directions} trips={trips} busy={busy} onCancel={()=>{if(!busy)setEditIssued(null)}} onSave={saveHistoricalEdit}/>}
       {preview && (
         <PayrollPreviewModal
           type={preview}
-          info={previewInfo}
+          info={historyPreview ?? previewInfo}
           busy={busy}
           error={error}
-          onClose={() => { if (!busy) setPreview(null); }}
+          onClose={() => { if (!busy) {setPreview(null);setHistoryPreview(null);} }}
           onDownload={confirmDownload}
         />
       )}

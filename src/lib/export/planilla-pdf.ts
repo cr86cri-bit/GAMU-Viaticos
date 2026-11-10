@@ -1,8 +1,8 @@
 'use client';
 import type {DatosPlanilla} from './planilla-oficial';
 import {montoLiteralBolivianos} from './monto-literal';
-const H=['NOMBRES Y APELLIDOS','CARGO','N° C.I.','FECHA','N° DE HOJA DE RUTA','DESCRIPCIÓN','DÍAS','VIÁTICO POR DÍA','TOTAL VIÁTICOS','RC-IVA 13%','VIÁTICO NETO','PASAJE CON FACTURA','PASAJE CON RECIBO','IUE 13%','IT 3%','PASAJE NETO','LÍQUIDO PAGABLE','FIRMA'];
-const widths=[27,31,19,22,18,33,11,18,20,19,20,18,18,18,16,20,22,100];
+const H=['NOMBRES Y\nAPELLIDOS','CARGO','N.º C.I.','FECHA','HOJA DE\nRUTA','DESCRIPCIÓN','DÍAS','VIÁTICO\nPOR DÍA','TOTAL\nVIÁTICOS','RC-IVA\n13%','VIÁTICO\nNETO','PASAJE\nFACTURA','PASAJE\nRECIBO','IUE\n13%','IT\n3%','PASAJE\nNETO','LÍQUIDO\nPAGABLE','FIRMA / SELLO'];
+const widths=[32,29,21,23,21,37,10,18,20,19,19,20,20,13,13,18,21,91];
 function dinero(n:number){return Number(n||0).toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function fecha(s:string){const [y,m,d]=s.split('-');return y&&m&&d?`${d}/${m}/${y}`:s}
 function fechaLiteral(s:string){
@@ -61,10 +61,10 @@ export async function exportarPlanillaPDF(info:DatosPlanilla):Promise<Blob>{
  const available=pw-left-right;const weightSum=widths.reduce((a,b)=>a+b,0);
  const columnStyles=Object.fromEntries(widths.map((w,i)=>[i,{cellWidth:w/weightSum*available}]));
  autoTable(doc,{startY:38,head:[H],body:[...rows,total],theme:'grid',margin:{left,right,top:38,bottom:30},tableWidth:available,
- styles:{font:'Twentieth Century',fontSize:9.4,cellPadding:2.1,halign:'center',valign:'middle',lineWidth:.25,lineColor:[0,0,0],overflow:'linebreak'},
- headStyles:{fillColor:rgb as [number,number,number],textColor,halign:'center',fontStyle:'bold',minCellHeight:28},
+ styles:{font:'Twentieth Century',fontSize:8.9,cellPadding:1.6,halign:'center',valign:'middle',lineWidth:.25,lineColor:[0,0,0],overflow:'linebreak'},
+ headStyles:{fillColor:rgb as [number,number,number],textColor,halign:'center',fontStyle:'bold',fontSize:8.1,minCellHeight:23,cellPadding:1.2},
  columnStyles,
- didParseCell(data){if(data.section==='body'&&data.row.index<rows.length){data.cell.styles.minCellHeight=39;}if(data.section==='body'&&data.row.index===rows.length){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[245,245,245];}if(data.section==='body'&&(data.column.index===11||data.column.index===12))data.cell.styles.fillColor=[242,233,226];},
+ didParseCell(data){if(data.section==='body'&&data.row.index<rows.length){data.cell.styles.minCellHeight=46;if(data.column.index===0)data.cell.styles.fontStyle='bold';}if(data.section==='body'&&data.row.index===rows.length){data.cell.styles.fontStyle='bold';data.cell.styles.fontSize=9.5;data.cell.styles.fillColor=[235,240,242];}if(data.section==='body'&&(data.column.index===11||data.column.index===12))data.cell.styles.fillColor=[242,233,226];},
  didDrawPage(data){const bottom=doc.internal.pageSize.getHeight()-7;doc.setFontSize(7);doc.setFont('Twentieth Century','normal');doc.text(`GAMU · Gestión ${info.gestion} · Página ${data.pageNumber}`,pw-8,bottom,{align:'right'});}
  });
  const last=(doc as typeof doc&{lastAutoTable?:{finalY:number}}).lastAutoTable;

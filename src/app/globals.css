@@ -235,3 +235,22 @@ html.gamu-dark {
  .gamu-card,.gamu-panel,.gamu-dialog,.gamu-table tbody tr {box-shadow:none!important}
  body{background:#fff!important;color:#000!important}
 }
+
+/* Etiquetas para viajes incluidos en documentos emitidos */
+.gamu-tag{background:var(--g-row-hover,#CCD0CF);color:var(--g-text,#06141B);border:1px solid var(--g-border,#9BA8AB)}
+.gamu-button-outline{border:1px solid var(--g-border,#9BA8AB);background:var(--g-surface,#ffffff);color:var(--g-text,#06141B)}
+.gamu-button-outline:hover{filter:brightness(.95)}
+
+/* Identificación de viajes ya asociados a planillas emitidas */
+.gamu-issued-label {
+  background: #D6E6E8;
+  color: #11212D;
+  border-color: #91AFB6;
+  box-shadow: inset 1px 1px 2px rgba(17,33,45,.08);
+}
+.dark .gamu-issued-label,
+[data-theme="dark"] .gamu-issued-label {
+  background: #344F60;
+  color: #F4FAFA;
+  border-color: #698695;
+}

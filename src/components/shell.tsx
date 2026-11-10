@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   LayoutDashboard, Users, MapPinned, Layers, Route, FileSpreadsheet,
   Wallet, LogOut, Settings, BriefcaseBusiness, Receipt, Menu, X,
-  Building2, ChevronLeft, ChevronRight, Sun, Moon,
+  Building2, ChevronLeft, ChevronRight, Sun, Moon, Files,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -20,6 +20,7 @@ const nav = [
   ["/tarifas", "Tarifas", Settings],
   ["/viajes", "Viajes", Route],
   ["/planillas", "Planillas", FileSpreadsheet],
+  ["/planillas-emitidas", "Planillas emitidas", Files],
   ["/presupuestos", "Presupuestos", Wallet],
   ["/reportes", "Reportes", Receipt],
 ] as const;
@@ -149,7 +150,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="mx-auto max-w-[1500px] p-4 pb-28 sm:p-7 lg:pb-8">{children}</main>
         <nav className="no-print fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 gamu-bottomnav border-t px-1 pb-[env(safe-area-inset-bottom)] lg:hidden">
-          {[nav[0], nav[1], nav[6], nav[7], nav[9]].map(([href, label, Icon]) => (
+          {[nav[0], nav[1], nav[6], nav[7], nav[10]].map(([href, label, Icon]) => (
             <Link
               key={href}
               href={href}
