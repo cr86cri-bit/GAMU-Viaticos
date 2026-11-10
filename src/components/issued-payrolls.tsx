@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { FileText, Eye, Pencil, Printer, Download, Search } from 'lucide-react';
 import { dateBO } from '@/lib/utils';
 
-type Documento = { id: string; gestion: number; nro_daf: string; fecha: string; created_at: string; descripcion?: string; direcciones?: {siglas?: string; nombre?: string} | null };
+export type Documento = { id: string; gestion: number; nro_daf: string; fecha: string; created_at: string; descripcion?: string; direcciones?: {siglas?: string; nombre?: string} | null };
 export function IssuedPayrolls({ documentos, onView, onEdit, onPrint, onPdf, busy }: {
   documentos: Documento[]; onView: (p: Documento) => void; onEdit: (p: Documento) => void;
   onPrint: (p: Documento) => void; onPdf: (p: Documento) => void; busy: boolean;

@@ -10,11 +10,12 @@ import { exportarPlanillaPDF } from "@/lib/export/planilla-pdf";
 import { Alert, Card, Field, Input, PageHeader, Select } from "@/components/ui";
 import { PayrollPreviewModal, type PreviewInfo } from "@/components/payroll-preview-modal";
 import { TripPicker } from "@/components/trip-picker";
-import { IssuedPayrolls } from "@/components/issued-payrolls";
+import { IssuedPayrolls, type Documento } from "@/components/issued-payrolls";
 import { EditIssuedPayroll, type EdicionPlanilla } from "@/components/edit-issued-payroll";
 import { crearFilasPlanilla, descripcionViajes } from "@/lib/payroll-data";
 
 type Row = { id: string; [key: string]: any };
+type PlanillaVinculo = { planilla_id: string; viaje_id: string };
 type ExportMode = "pdf" | "excel" | "print";
 type Emission = { id: string; numero: string; key: string };
 
@@ -35,8 +36,8 @@ export function Payroll({ mode = "create" }: { mode?: "create" | "issued" }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [hotelDocs, setHotelDocs] = useState<Row[]>([]);
   const [directions, setDirections] = useState<Row[]>([]);
-  const [issued, setIssued] = useState<Row[]>([]);
-  const [links, setLinks] = useState<Row[]>([]);
+  const [issued, setIssued] = useState<Documento[]>([]);
+  const [links, setLinks] = useState<PlanillaVinculo[]>([]);
   const [historyPreview, setHistoryPreview] = useState<PreviewInfo | null>(null);
   const [editIssued, setEditIssued] = useState<EdicionPlanilla | null>(null);
   const [direction, setDirection] = useState("");
