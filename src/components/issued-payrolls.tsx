@@ -20,10 +20,10 @@ export function IssuedPayrolls({ documentos, onView, onEdit, onPrint, onPdf, bus
       {filtered.map(p=><div key={p.id} className="gamu-choice rounded-xl border border-[var(--g-border)] p-3 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
         <div className="min-w-0"><p className="font-bold gamu-text">N.º {p.nro_daf} · {p.direcciones?.siglas??'Dirección'} · {p.gestion}</p><p className="text-xs gamu-muted">Fecha de planilla: {dateBO(p.fecha)} · Creada: {new Date(p.created_at).toLocaleDateString('es-BO')}</p></div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={busy} onClick={()=>onView(p)} className="gamu-button-outline rounded-lg px-3 py-2 text-xs font-semibold inline-flex items-center gap-1"><Eye size={15}/> Ver</button>
-          <button type="button" disabled={busy} onClick={()=>onEdit(p)} className="gamu-button-outline rounded-lg px-3 py-2 text-xs font-semibold inline-flex items-center gap-1"><Pencil size={15}/> Editar</button>
-          <button type="button" disabled={busy} onClick={()=>onPdf(p)} className="gamu-button-outline rounded-lg px-3 py-2 text-xs font-semibold inline-flex items-center gap-1"><Download size={15}/> PDF</button>
-          <button type="button" disabled={busy} onClick={()=>onPrint(p)} className="gamu-button-outline rounded-lg px-3 py-2 text-xs font-semibold inline-flex items-center gap-1"><Printer size={15}/> Imprimir</button>
+          <button type="button" disabled={busy} onClick={()=>onView(p)} className="gamu-issued-action rounded-xl px-3 py-2.5 text-xs font-semibold inline-flex items-center gap-1.5 justify-center"><Eye size={15}/> Ver</button>
+          <button type="button" disabled={busy} onClick={()=>onEdit(p)} className="gamu-issued-action rounded-xl px-3 py-2.5 text-xs font-semibold inline-flex items-center gap-1.5 justify-center"><Pencil size={15}/> Editar</button>
+          <button type="button" disabled={busy} onClick={()=>onPdf(p)} className="gamu-issued-action rounded-xl px-3 py-2.5 text-xs font-semibold inline-flex items-center gap-1.5 justify-center"><Download size={15}/> PDF</button>
+          <button type="button" disabled={busy} onClick={()=>onPrint(p)} className="gamu-issued-action rounded-xl px-3 py-2.5 text-xs font-semibold inline-flex items-center gap-1.5 justify-center"><Printer size={15}/> Imprimir</button>
         </div>
       </div>)}
       {filtered.length===0&&<p className="text-sm gamu-muted">No hay planillas que coincidan con el filtro.</p>}
