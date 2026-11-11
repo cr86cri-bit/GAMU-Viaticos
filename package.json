@@ -24,7 +24,8 @@
     "tailwind-merge": "^3.0.0",
     "exceljs": "^4.4.0",
     "jspdf": "^2.5.2",
-    "jspdf-autotable": "^3.8.4"
+    "jspdf-autotable": "^3.8.4",
+    "html2canvas": "1.4.1"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

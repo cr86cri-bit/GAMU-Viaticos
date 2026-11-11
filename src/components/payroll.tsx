@@ -6,7 +6,7 @@ import { FileDown, FileSpreadsheet, Printer, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { friendlyError } from "@/lib/error-messages";
 import { exportarPlanillaOficial, type FilaPlanilla } from "@/lib/export/planilla-oficial";
-import { exportarPlanillaPDF } from "@/lib/export/planilla-pdf";
+import { exportarPlanillaVisualPDF } from "@/lib/export/planilla-pdf-visual";
 import { Alert, Card, Field, Input, PageHeader, Select } from "@/components/ui";
 import { PayrollPreviewModal, type PreviewInfo } from "@/components/payroll-preview-modal";
 import { TripPicker } from "@/components/trip-picker";
@@ -298,7 +298,7 @@ export function Payroll({ mode = "create" }: { mode?: "create" | "issued" }) {
       const fileInfo = historyPreview ?? { ...previewInfo, daf: numero };
       const blob = preview === "excel"
         ? await exportarPlanillaOficial(fileInfo)
-        : await exportarPlanillaPDF(fileInfo);
+        : await exportarPlanillaVisualPDF(fileInfo.daf);
       if (preview === "print") {
         const url = URL.createObjectURL(blob);
         printWindow!.location.href = url;

@@ -1,0 +1,21 @@
+GAMU – PDF exactamente basado en la previsualización HTML
+
+Se agregó src/lib/export/planilla-pdf-visual.ts.
+Se modificaron src/components/payroll.tsx y src/components/payroll-preview-modal.tsx.
+Se agregó html2canvas 1.4.1 a package.json.
+
+Antes de ejecutar: npm install
+Después: npm run build
+
+Al exportar PDF o imprimir, se captura la misma plantilla HTML que aparece
+visible en la previsualización, con los mismos colores, bordes, tamaños,
+negritas y fuentes. Es una captura de alta resolución dentro de un PDF A3.
+Limitación: el contenido del PDF será imagen; no permite seleccionar/buscar texto.
+Las planillas extensas pueden ocupar más de una página y, en caso de
+corte, pueden dividirse filas. El Excel no cambia.
+
+Copiar a public/fonts/ los archivos autorizados:
+  Twentieth-Century.ttf
+  Twentieth-Century-Bold.ttf
+
+El ZIP no redistribuye las fuentes.

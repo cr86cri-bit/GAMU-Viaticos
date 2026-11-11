@@ -3,7 +3,7 @@ import type {DatosPlanilla} from './planilla-oficial';
 import {montoLiteralBolivianos} from './monto-literal';
 const H=['NOMBRES Y\nAPELLIDOS','CARGO','N.º C.I.','FECHA','HOJA DE\nRUTA','DESCRIPCIÓN','DÍAS','VIÁTICO\nPOR DÍA','TOTAL\nVIÁTICOS','RC-IVA\n13%','VIÁTICO\nNETO','PASAJE\nFACTURA','PASAJE\nRECIBO','IUE\n13%','IT\n3%','PASAJE\nNETO','LÍQUIDO\nPAGABLE','FIRMA / SELLO'];
 // Proporciones alineadas con la previsualización HTML (firma amplia ~15%).
-const widths=[38,31,23,26,23,45,17,20,23,21,23,23,23,14,14,21,23,63];
+const widths=[38,31,23,33,23,43,10,20,23,21,23,23,23,14,14,21,23,70];
 function dinero(n:number){return Number(n||0).toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function fecha(s:string){const [y,m,d]=s.split('-');return y&&m&&d?`${d}/${m}/${y}`:s}
 function fechaLiteral(s:string){

@@ -317,3 +317,108 @@ html.gamu-dark {
   font-display: swap;
 }
 .gamu-document { font-synthesis: none; }
+
+
+/* Hoja OFICIAL: se usa exactamente el mismo DOM para preview y PDF.
+   Evitar bordes fraccionarios: html2canvas los redondea de forma irregular.
+   No aplicar sombras, espaciados de tabla ni neumorfismo a esta hoja. */
+.gamu-print-sheet,
+.gamu-print-sheet * {
+  box-sizing: border-box !important;
+  font-family: 'GAMU Twentieth Century', sans-serif !important;
+  font-synthesis: none !important;
+}
+.gamu-print-sheet {
+  width: 1480px !important;
+  min-width: 1480px !important;
+  max-width: 1480px !important;
+  margin: 0 auto !important;
+  background: #fff !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  text-rendering: geometricPrecision;
+}
+.gamu-print-sheet .gamu-official-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  table-layout: auto !important;
+  box-shadow: none !important;
+}
+.gamu-print-sheet .gamu-official-table tr,
+.gamu-print-sheet .gamu-official-table th,
+.gamu-print-sheet .gamu-official-table td {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.gamu-print-sheet .gamu-official-cell {
+  /* Borde ligeramente más fino; no se duplica gracias a border-collapse. */
+  border: 0.65px solid #333 !important;
+  font-family: 'GAMU Twentieth Century', sans-serif !important;
+  background-clip: padding-box;
+}
+.gamu-print-sheet [data-gamu-document-box="true"] {
+  width: 220px !important;
+  height: 42px !important;
+  display: grid !important;
+  grid-template-columns: 145px 75px !important;
+  grid-template-rows: 42px !important;
+  align-items: stretch !important;
+  justify-items: stretch !important;
+  border: 0.75px solid #333 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+.gamu-print-sheet [data-gamu-document-label="true"],
+.gamu-print-sheet [data-gamu-document-number="true"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  letter-spacing: normal !important;
+  text-indent: 0 !important;
+  vertical-align: middle !important;
+  transform: none !important;
+}
+.gamu-print-sheet [data-gamu-document-label="true"] {
+  border-right: 0.75px solid #333 !important;
+}
+.gamu-print-sheet [data-gamu-document-number="true"] {
+  border: 0 !important;
+}
+
+/* Recuadro oficial del correlativo: el texto se centra visualmente en las
+   dos celdas mediante el MISMO elemento que html2canvas captura al imprimir.
+   La métrica de Twentieth Century Bold baja la tinta ~6 px respecto al centro
+   de su caja. La traslación es solo óptica, no cambia márgenes ni tamaño. */
+.gamu-print-sheet [data-gamu-document-label="true"] .gamu-document-text,
+.gamu-print-sheet [data-gamu-document-number="true"] .gamu-document-text {
+  display: block !important;
+  position: static !important;
+  top: auto !important;
+  transform: translateY(-9px) !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Centrando la tinta real en ambas celdas del correlativo (preview y PDF).
+   El offset se mide mediante el mismo motor html2canvas que exporta la hoja. */
+.gamu-print-sheet [data-gamu-document-label="true"] .gamu-document-text,
+.gamu-print-sheet [data-gamu-document-number="true"] .gamu-document-text {
+  transform: translateY(var(--gamu-ink-offset, 0px)) !important;
+  display: block !important;
+  line-height: 1 !important;
+}

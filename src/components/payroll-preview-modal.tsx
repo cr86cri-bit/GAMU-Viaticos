@@ -1,4 +1,6 @@
 "use client";
+import {useEffect} from "react";
+import {centrarNumeroDocumento} from "@/lib/export/centrar-numero-documento";
 import {X,Download,FileSpreadsheet,FileDown,Printer} from 'lucide-react';
 import {bs,dateBO} from '@/lib/utils';
 import {montoLiteralBolivianos} from '@/lib/export/monto-literal';
@@ -9,13 +11,25 @@ export function PayrollPreviewModal({type,info,busy,error,onClose,onDownload}:{t
  const sum=(k:keyof FilaPlanilla)=>info.filas.reduce((n,r)=>n+Number(r[k]||0),0);
  const numeric:(keyof FilaPlanilla)[]=['viaticoDia','totalViatico','rciva','viaticoNeto','pasajeFactura','pasajeRecibo','iue','it','pasajeNeto','liquido'];
  const total=sum('liquido');
+ useEffect(() => {
+   let cancelled = false;
+   void (async () => {
+     await document.fonts.ready;
+     if (cancelled) return;
+     const sheet = document.querySelector<HTMLElement>('[data-gamu-print-document="true"]');
+     if (!sheet) return;
+     const {default:html2canvas} = await import('html2canvas');
+     if (!cancelled) await centrarNumeroDocumento(sheet, html2canvas);
+   })().catch(console.error);
+   return () => { cancelled = true; };
+ }, [info.daf]);
  return <div className="fixed inset-0 z-[100] bg-[#06141B]/75 flex flex-col p-2 sm:p-5" role="dialog" aria-modal="true" aria-label={`Vista previa de planilla ${type.toUpperCase()}`} onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}>
  <div className="mx-auto flex max-h-full w-full max-w-[1550px] flex-col overflow-hidden rounded-2xl gamu-dialog shadow-2xl">
  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--g-border)] px-4 py-3 sm:px-6"><div><h2 className="text-lg font-bold gamu-text">Previsualización {type==='print'?'PARA IMPRIMIR':type.toUpperCase()}</h2><p className="text-xs gamu-muted">Revisa los datos antes de generar el archivo. El correlativo se confirma al descargar.</p></div><button type="button" onClick={onClose} aria-label="Cerrar previsualización" className="rounded-lg p-2 hover:bg-[var(--g-row-hover)]"><X size={22}/></button></div>
- <div className="flex-1 overflow-auto bg-[#DCE2E3] p-3 sm:p-6"><div className="gamu-document mx-auto w-[1480px] bg-white px-6 py-6 text-black shadow-md" style={{fontFamily:'GAMU Twentieth Century, sans-serif'}}>
- <div className="grid grid-cols-[110px_1fr_auto] items-start gap-4"><img src="/escudo-gamu.png" alt="Escudo de Uyuni" className="h-28 w-24 object-contain"/><div><b className="text-[17px]">GOBIERNO AUTÓNOMO MUNICIPAL DE UYUNI</b><p className="text-[13px] italic">PRIMERA SECCIÓN - PROVINCIA ANTONIO QUIJARRO</p><p className="text-[13px]">POTOSÍ - BOLIVIA</p></div><div className="border-2 border-black px-5 py-2 text-center text-sm font-bold">N.º DE DOCUMENTO: {info.daf}</div></div>
+ <div className="flex-1 overflow-auto bg-[#DCE2E3] p-3 sm:p-6"><div data-gamu-print-document="true" className="gamu-document gamu-print-sheet mx-auto w-[1480px] min-w-[1480px] bg-white px-6 py-6 text-black shadow-md" style={{fontFamily:'GAMU Twentieth Century, sans-serif'}}>
+ <div className="grid grid-cols-[110px_minmax(0,1fr)_220px] items-start gap-4"><img src="/escudo-gamu.png" alt="Escudo de Uyuni" className="h-28 w-24 object-contain"/><div><b className="text-[17px]">GOBIERNO AUTÓNOMO MUNICIPAL DE UYUNI</b><p className="text-[13px] italic">PRIMERA SECCIÓN - PROVINCIA ANTONIO QUIJARRO</p><p className="text-[13px]">POTOSÍ - BOLIVIA</p></div><div data-gamu-document-box="true" className="grid h-[42px] w-[220px] grid-cols-[145px_75px] text-[13px] font-bold"><span data-gamu-document-label="true"><span className="gamu-document-text">N.º DE DOCUMENTO</span></span><span data-gamu-document-number="true"><span className="gamu-document-text">{info.daf}</span></span></div></div>
  <h3 className="my-5 text-center text-[22px] font-bold underline">PLANILLA DE PASAJES Y VIÁTICOS GESTIÓN {info.gestion}</h3>
- <table className="w-full border-collapse text-[13px] font-medium"><colgroup>{headers.map((_,i)=><col key={i} style={i===17?{width:"16%"}:undefined}/>)}</colgroup><thead><tr>{headers.map(h=><th key={h} className="border border-black px-1 py-3 text-center font-extrabold text-black text-[12px]" style={{backgroundColor:info.color}}>{h}</th>)}</tr></thead><tbody>{info.filas.map((r,i)=><tr key={i}>{[r.nombre,r.cargo,r.ci,dateBO(r.fecha),r.hojaRuta,`${r.descripcion} — SE PAGA EL ${r.porcentaje}%`,r.dias,...numeric.map(k=>bs(Number(r[k]||0))),''].map((value,j)=><td key={j} className={`border border-black px-1 py-10 text-center text-black ${j===0?'font-extrabold':''}`}>{value}</td>)}</tr>)}<tr className="font-extrabold text-black"><td colSpan={7} className="border border-black py-2 text-right">TOTAL&nbsp;</td>{numeric.map(k=><td key={k} className="border border-black text-center font-extrabold">{bs(sum(k))}</td>)}<td className="border border-black"/></tr></tbody></table>
+ <table className="gamu-official-table w-full border-collapse text-[13px] font-medium"><colgroup>{headers.map((_,i)=><col key={i} style={i===17?{width:"16%"}:undefined}/>)}</colgroup><thead><tr>{headers.map(h=><th key={h} className="gamu-official-cell px-1 py-3 text-center font-extrabold text-black text-[12px]" style={{backgroundColor:info.color}}>{h}</th>)}</tr></thead><tbody>{info.filas.map((r,i)=><tr key={i}>{[r.nombre,r.cargo,r.ci,dateBO(r.fecha),r.hojaRuta,`${r.descripcion} — SE PAGA EL ${r.porcentaje}%`,r.dias,...numeric.map(k=>bs(Number(r[k]||0))),''].map((value,j)=><td key={j} className={`gamu-official-cell px-1 py-10 text-center text-black ${j===0?'font-extrabold':''}`}>{value}</td>)}</tr>)}<tr className="font-extrabold text-black"><td colSpan={7} className="gamu-official-cell py-2 text-right">TOTAL&nbsp;</td>{numeric.map(k=><td key={k} className="gamu-official-cell text-center font-extrabold">{bs(sum(k))}</td>)}<td className="gamu-official-cell"/></tr></tbody></table>
  <p className="mt-6 text-[15px] font-bold italic">SON: {montoLiteralBolivianos(total)}</p><p className="mt-5 text-[14px]"><b>DESCRIPCIÓN:</b> {info.descripcion||'—'}</p><p className="mt-5 text-[14px]">UYUNI, {new Date(`${info.fecha}T12:00:00Z`).toLocaleDateString("es-BO",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).toUpperCase()}</p></div></div>
  {error&&<p role="alert" className="border-t bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>}<div className="flex flex-wrap justify-end gap-2 border-t border-[var(--g-border)] gamu-dialog px-4 py-3"><button onClick={onClose} disabled={busy} className="rounded-xl gamu-choice border px-5 py-2.5 text-sm font-semibold">Cancelar</button><button onClick={onDownload} disabled={busy} className="gamu-preview-submit inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold disabled:opacity-50">{type==='print'?<Printer size={18}/>:type==='pdf'?<FileDown size={18}/>:<FileSpreadsheet size={18}/>} {busy?'Generando...':<> <Download size={16}/> {type==='print'?'Abrir PDF para imprimir':`Confirmar y descargar ${type.toUpperCase()}`}</>}</button></div>
  </div></div>;
