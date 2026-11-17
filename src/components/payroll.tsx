@@ -98,8 +98,20 @@ export function Payroll({ mode = "create" }: { mode?: "create" | "issued" }) {
   },[issued,links]);
 
   async function buildIssuedPreview(p:any):Promise<PreviewInfo> {
-    if(p.snapshot?.filas?.length && p.snapshot?.gestion && p.snapshot?.daf){
-      return p.snapshot as PreviewInfo;
+    // Los metadatos oficiales prevalecen sobre copias antiguas: editar una
+    // planilla nunca debe sustituir su número por otro guardado en snapshot.
+    const dirActual = directions.find(d=>d.id===p.direccion_id);
+    const datosOficiales = {
+      daf: String(p.nro_daf),
+      gestion: String(p.gestion),
+      fecha: p.fecha,
+      siglas: String(dirActual?.siglas ?? p.direcciones?.siglas ?? 'GAMU').trim(),
+      direccionNombre: String(dirActual?.nombre ?? p.direcciones?.nombre ?? '').trim(),
+      color: dirActual?.color ?? p.direcciones?.color ?? '#CCD0CF',
+    };
+    if(p.snapshot?.filas?.length){
+      return {...(p.snapshot as PreviewInfo), ...datosOficiales,
+        descripcion: p.descripcion || p.snapshot.descripcion || ''};
     }
     const ids=links.filter(l=>l.planilla_id===p.id).map(l=>l.viaje_id);
     if(!ids.length)throw new Error('La planilla no tiene viajes vinculados.');
@@ -110,10 +122,10 @@ export function Payroll({ mode = "create" }: { mode?: "create" | "issued" }) {
     if(errC)throw errC;
     const selected=allTrips.filter(t=>ids.includes(t.id));
     if(selected.length!==ids.length)throw new Error('No se encuentran todos los viajes de la planilla.');
-    const dir=directions.find(d=>d.id===p.direccion_id);
     return {gestion:String(p.gestion),daf:String(p.nro_daf),fecha:p.fecha,
-      descripcion:p.descripcion||descripcionViajes(selected),siglas:dir?.siglas??p.direcciones?.siglas??'GAMU',
-      color:dir?.color??p.direcciones?.color??'#CCD0CF',filas:crearFilasPlanilla(selected,dias,docs??[])};
+      descripcion:p.descripcion||descripcionViajes(selected),
+      siglas:datosOficiales.siglas, direccionNombre:datosOficiales.direccionNombre,
+      color:datosOficiales.color,filas:crearFilasPlanilla(selected,dias,docs??[])};
   }
   async function prepareHistory(p:any, mode:ExportMode) {
     setBusy(true);setError('');
@@ -126,7 +138,7 @@ export function Payroll({ mode = "create" }: { mode?: "create" | "issued" }) {
     setEditIssued({id:p.id,direccion_id:p.direccion_id,gestion:String(p.gestion),numero:String(p.nro_daf),fecha:p.fecha,viajes:ids});
   }
   async function saveHistoricalEdit(ed:EdicionPlanilla) {
-    if(!ed.direccion_id || !/^\d{4}$/.test(ed.gestion) || !/^[1-9]\d{0,8}$/.test(ed.numero) || !ed.fecha || !ed.viajes.length){setError('Completa todos los campos y selecciona viajes válidos.');return;}
+    if(!ed.direccion_id || !/^\d{4}$/.test(ed.gestion) || !ed.fecha || !ed.viajes.length){setError('Completa todos los campos y selecciona viajes válidos.');return;}
     setBusy(true);setError('');
     try {
       const data=allTrips.filter(t=>ed.viajes.includes(t.id));
@@ -231,6 +243,7 @@ export function Payroll({ mode = "create" }: { mode?: "create" | "issued" }) {
     fecha,
     descripcion: automaticDescription,
     siglas: dir?.siglas || "DAF",
+    direccionNombre: dir?.nombre || "",
     color: dir?.color || "#E2EDD9",
     filas: exportRows,
   };

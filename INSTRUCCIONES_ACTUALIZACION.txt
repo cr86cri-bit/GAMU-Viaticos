@@ -1,0 +1,21 @@
+GAMU VIÁTICOS — ACTUALIZACIÓN DE PLANILLAS
+
+RECOMENDADO: usar el ZIP de archivos modificados y reemplazarlos
+respetando exactamente las rutas src/...
+
+Cambios:
+1. Al editar una planilla su número no puede cambiarse.
+2. Las planillas nuevas y emitidas muestran la dirección completa y su sigla.
+3. PDF y pantalla comparten encabezado. Excel también muestra la dirección.
+4. El historial prioriza los datos oficiales actuales del documento.
+
+Supabase: la migración SQL YA fue aplicada en la base de datos del proyecto
+GAMU; no la ejecutes nuevamente en producción.
+Se actualizaron los metadatos de las copias históricas existentes,
+sin cambiar sus números ni los importes.
+
+Fuentes: conserva tus archivos Twentieth-Century.ttf y
+Twentieth-Century-Bold.ttf en public/fonts del proyecto.
+Este ZIP no redistribuye fuentes.
+
+Antes de publicar: npm install y npm run build.

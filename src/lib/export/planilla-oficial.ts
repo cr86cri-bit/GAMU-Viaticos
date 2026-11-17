@@ -8,7 +8,7 @@ export type FilaPlanilla = {
   viaticoNeto: number; pasajeFactura: number; pasajeRecibo: number;
   iue: number; it: number; pasajeNeto: number; liquido: number;
 };
-export type DatosPlanilla = { gestion: string; daf: string; descripcion: string; fecha: string; filas: FilaPlanilla[]; siglas?:string; color?:string };
+export type DatosPlanilla = { gestion: string; daf: string; descripcion: string; fecha: string; filas: FilaPlanilla[]; siglas?:string; direccionNombre?:string; color?:string };
 
 const WHITE='FFFFFFFF', PEACH='FFF8E2D4', GRID='FF000000', BLACK='FF000000';
 const widths=[18,21,12,15,11.2,18,6,8.6,12.6,11.3,11.2,9.6,9.4,11.2,11.2,12,11.2,55];
@@ -25,11 +25,14 @@ export async function exportarPlanillaOficial(info:DatosPlanilla){
  widths.forEach((w,i)=>sheet.getColumn(i+1).width=w);
  [20,20,20,23,50,68,22].forEach((height,i)=>sheet.getRow(i+1).height=height);
  const center={vertical:'middle' as const,horizontal:'center' as const,wrapText:true};
- sheet.mergeCells('A1:A4');sheet.mergeCells('B1:E1');sheet.mergeCells('B2:E2');sheet.mergeCells('B3:E3');sheet.mergeCells('G4:P4');sheet.mergeCells('P1:Q1');
+ sheet.mergeCells('A1:A4');sheet.mergeCells('B1:E1');sheet.mergeCells('B2:E2');sheet.mergeCells('B3:E3');sheet.mergeCells('G4:P4');sheet.mergeCells('P1:Q1');sheet.mergeCells('B4:E4');
  sheet.getCell('B1').value='GOBIERNO AUTÓNOMO MUNICIPAL DE UYUNI';sheet.getCell('B1').font={name:'Twentieth Century',size:12,bold:true};
  sheet.getCell('B2').value='PRIMERA SECCIÓN - PROVINCIA ANTONIO QUIJARRO';sheet.getCell('B2').font={name:'Twentieth Century',size:9,italic:true,bold:true};
  sheet.getCell('B3').value='POTOSÍ - BOLIVIA';sheet.getCell('B3').alignment=center;sheet.getCell('B3').font={name:'Twentieth Century',size:9};
- sheet.getCell('P1').value=`N.º DOCUMENTO`;sheet.getCell('P1').alignment=center;
+ sheet.getCell('B4').value=`DIRECCIÓN: ${info.direccionNombre || info.siglas || 'NO ASIGNADA'}`;
+ sheet.getCell('B4').font={name:'Twentieth Century',size:10,bold:true};
+ sheet.getCell('B4').alignment={vertical:'middle',horizontal:'left',wrapText:true};
+ sheet.getCell('P1').value=`N.º ${info.siglas || 'DOCUMENTO'}`;sheet.getCell('P1').alignment=center;
  sheet.getCell('R1').value=info.daf||'';sheet.getCell('R1').alignment=center;
  for(const a of ['P1','R1']){const c=sheet.getCell(a);c.border={top:thick,bottom:thick,left:thick,right:thick};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:a==='R1'?PEACH:WHITE}};c.font={name:'Twentieth Century',bold:true,size:10};}
  sheet.getCell('G4').value=`PLANILLA DE PASAJES Y VIÁTICOS GESTION ${info.gestion}`;sheet.getCell('G4').font={name:'Twentieth Century',size:16,bold:true,underline:true};sheet.getCell('G4').alignment=center;
